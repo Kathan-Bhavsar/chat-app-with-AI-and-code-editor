@@ -47,7 +47,9 @@ const registerUser = asyncHandler(async (req, res) => {
         password
     });
 
-    const savedUser = await user.save();
+    await user.save();
+
+    const savedUser = await User.findById(user._id).select("-password -refreshToken");
 
     if (!savedUser) {
         throw new ApiError(500, 'User Registration Failed!');

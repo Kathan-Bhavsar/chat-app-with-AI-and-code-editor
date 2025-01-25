@@ -1,6 +1,11 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+@font-face {
+  font-family: "Mona-sans";
+  src: url("/font/Mona-Sans.woff2") format("opentype");
+}
 
 * {
   margin: 0%;
@@ -12,6 +17,7 @@ html,
 body {
   height: 100%;
   width: 100%;
+  font-family: "Mona-sans", sans-serif;
 }
 
 .message-box{
