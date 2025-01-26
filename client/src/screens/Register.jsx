@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState , useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from '../config/axios.js';
+import { UserContext } from '../context/user.context.jsx';
 
 function Register() {
   const [formData, setFormData] = useState({
@@ -13,6 +14,8 @@ function Register() {
   const [errors, setErrors] = useState({});
   const [globalError, setGlobalError] = useState('');
   const navigate = useNavigate();
+
+  const { setUser } = useContext(UserContext);
 
   const handleChange = (e) => {
     const { id, value } = e.target;
@@ -69,11 +72,19 @@ function Register() {
     }
 
     try {
-      const response = await axios.post('/register', formData);
+      const response = await axios.post('/user/register', formData);
       
       // Assuming backend returns a token or user info
       localStorage.setItem('accessToken', response.data.accessToken);
       localStorage.setItem('refreshToken', response.data.refreshToken);
+
+      const { data } = response.data;
+      if (data?.user) {
+        setGlobalError('');
+        setUser(data.user);
+      } else {
+        console.log('User not found in API response');
+      }
       
       // Redirect to login or dashboard
       navigate('/');

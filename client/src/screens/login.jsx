@@ -1,12 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from '../config/axios.js';
+import { UserContext } from '../context/user.context.jsx';
 
 function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+
+  const { setUser } = useContext(UserContext);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -19,11 +22,20 @@ function Login() {
     }
 
     try {
-      const response = await axios.post('/login', { username, password });
+      const response = await axios.post('http://localhost:8000/user/login', { username, password });
 
       // Store tokens securely
       localStorage.setItem('accessToken', response.data.accessToken);
       localStorage.setItem('refreshToken', response.data.refreshToken);
+
+      console.log("API response:", response.data); // Debugging the API response
+
+      const { data } = response.data;
+      if (data?.user) {
+        setUser(data.user); // Update the User Context
+      } else {
+        console.log("User not found in API response");
+      }
 
       // Redirect to the dashboard or home page
       navigate('/');
@@ -37,13 +49,13 @@ function Login() {
     <div className="min-h-screen flex items-center justify-center bg-gray-900">
       <div className="bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-md">
         <h2 className="text-4xl font-bold text-white mb-6 text-center">Login</h2>
-        
+
         {error && (
           <div className="bg-red-500 text-white p-3 rounded mb-4 text-center">
             {error}
           </div>
         )}
-        
+
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label className="block text-gray-400 mb-2" htmlFor="username">Username</label>

@@ -49,15 +49,41 @@ const registerUser = asyncHandler(async (req, res) => {
 
     await user.save();
 
-    const savedUser = await User.findById(user._id).select("-password -refreshToken");
+    const savedUser = await User.findById(user._id).select("-password -refreshToken -__v");
 
     if (!savedUser) {
         throw new ApiError(500, 'User Registration Failed!');
     }
 
+    const { accessToken, refreshToken } = await generateAccessandRefreshToken(user._id);
+
+    const RegisterUser = await User.findById(user._id).select(
+        "-password -refreshToken -dob -createdAt -updatedAt -email -role -_id"
+    );
+
+    const options = {
+        httpOnly: true,
+        secure: true,
+        sameSite: "None",
+        maxAge: 604800000,
+    };
+
+    delete user._doc.password;
+    delete user._doc.refreshToken;
+
     return res
-        .status(201)
-        .json(new ApiResponse(201, 'User Created Successfully!', user));
+    .status(200)
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken , options)
+    .json(
+        new ApiResponse(
+            200,
+            {
+                user: RegisterUser,
+            },
+            "User Registered Successfully!"
+        )
+    );
 });
 
 const loginUser = asyncHandler(async (req, res) => {
@@ -101,8 +127,6 @@ const loginUser = asyncHandler(async (req, res) => {
             200,
             {
                 user: loggedInUser,
-                accessToken,
-                refreshToken,
             },
             "User Logged In Successfully!"
         )
