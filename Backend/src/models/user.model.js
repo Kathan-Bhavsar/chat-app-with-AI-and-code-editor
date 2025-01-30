@@ -26,11 +26,6 @@ const userSchema = new Schema({
         type: Date,
         required: true
     },
-    role: {
-        type: String,
-        enum: ['member', 'admin'],
-        default: 'member'
-    },
     refreshToken: {
         type: String,
     }

@@ -20,9 +20,11 @@ app.use(cookieparser());
 
 //routes
 import userRoutes from './routes/user.routes.js';
+import projectRoutes from './routes/project.routes.js';
 
 //use routes
 app.use("/user", userRoutes);
+app.use("/project", projectRoutes);
 
 export {app};
 

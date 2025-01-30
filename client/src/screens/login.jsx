@@ -8,7 +8,6 @@ function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
-
   const { setUser } = useContext(UserContext);
 
   const handleSubmit = async (e) => {
@@ -22,25 +21,18 @@ function Login() {
     }
 
     try {
-      const response = await axios.post('http://localhost:8000/user/login', { username, password });
-
-      // Store tokens securely
-      localStorage.setItem('accessToken', response.data.accessToken);
-      localStorage.setItem('refreshToken', response.data.refreshToken);
+      const response = await axios.post('/user/login', { username, password });
 
       console.log("API response:", response.data); // Debugging the API response
 
       const { data } = response.data;
       if (data?.user) {
         setUser(data.user); // Update the User Context
+        navigate('/'); // Redirect to home or dashboard
       } else {
-        console.log("User not found in API response");
+        setError("User not found in API response");
       }
-
-      // Redirect to the dashboard or home page
-      navigate('/');
     } catch (err) {
-      // Handle login errors
       setError(err.response?.data?.message || 'Login failed. Please try again.');
     }
   };
@@ -86,6 +78,7 @@ function Login() {
             Login
           </button>
         </form>
+
         <p className="text-gray-400 mt-4 text-center">
           Don't have an account? <Link to="/register" className="text-blue-500 hover:underline">Create one</Link>
         </p>
