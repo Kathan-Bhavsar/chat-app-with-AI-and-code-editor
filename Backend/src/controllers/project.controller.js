@@ -145,6 +145,7 @@ const deleteProject = asyncHandler(async (req, res) => {
 const addMember = asyncHandler(async (req, res) => {
     const { id: project_id } = req.params;
     const { username } = req.body;  // Get username instead of member_id
+    const user_id = req.user._id;
 
     const project = await Project.findOne({
         _id: project_id
@@ -152,6 +153,10 @@ const addMember = asyncHandler(async (req, res) => {
 
     if (!project) {
         throw new ApiError(404, 'Project Not Found!');
+    }
+
+    if(!project.admin.equals(user_id)){
+        throw new ApiError(401, 'You are not authorized to add members to this project!');
     }
 
     // Find user by username

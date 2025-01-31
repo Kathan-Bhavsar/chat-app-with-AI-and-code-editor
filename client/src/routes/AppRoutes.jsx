@@ -5,6 +5,7 @@ import Register from '../screens/Register.jsx';
 import Home from '../screens/Home.jsx';
 import ProjectForm from '../screens/project_form.jsx';
 import Project from '../screens/project.jsx';
+import AddMember from '../screens/Addmember.jsx';
 
 const AppRoutes = () => {
   return (
@@ -15,6 +16,7 @@ const AppRoutes = () => {
         <Route path="/register" element = {<Register />} />
         <Route path="/create-project" element = {<ProjectForm />} />
         <Route path="/project/:projectId" element = {<Project />} />
+        <Route path="/project/:projectId/add-member" element = {<AddMember />} />
     </Routes>
    </BrowserRouter>
   );
