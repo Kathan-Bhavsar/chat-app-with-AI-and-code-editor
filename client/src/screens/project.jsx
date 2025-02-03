@@ -2,6 +2,7 @@ import React, { useState, useContext, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axiosInstance from "../config/axios";
 import { UserContext } from "../context/user.context.jsx";
+import { initializeSocket, recieveMessage, sendMessage } from "../config/socketio.js";
 
 const Project = () => {
   const navigate = useNavigate();
@@ -13,12 +14,47 @@ const Project = () => {
     members: [],
     adminId: null
   });
-  const [messages, setMessages] = useState([]);
-  const [newMessage, setNewMessage] = useState("");
+  const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [fileContent, setFileContent] = useState("");
   const [loading, setLoading] = useState(true);
   const [showMembers, setShowMembers] = useState(false);
+
+  useEffect(() => {
+    const socket = initializeSocket(projectId);
+
+    recieveMessage('project-message', (data) => {
+      console.log(data);
+    });
+
+    // Wait for connection before adding listeners
+    const onConnect = () => {
+      console.log('Socket connected, adding listeners');
+      // socket.on('newMessage', handleNewMessage);
+    };
+
+    socket.on('connect', onConnect);
+
+    // Cleanup
+    return () => {
+      socket.off('connect', onConnect);
+      socket.off('newMessage');
+      socket.disconnect();
+    };
+  }, []);
+
+  const send = (event) => {
+    event.preventDefault();
+    
+    if(!message.trim()) return;
+    sendMessage('project-message', {
+      message,
+      sender : user._id
+    })
+
+    console.log("Message sent:", message);
+    setMessage("");
+  }
 
   useEffect(() => {
     const fetchProjectData = async () => {
@@ -30,11 +66,11 @@ const Project = () => {
 
         const project = projectRes.data.message;
         const members = membersRes.data.message || [];
-        
+
         // Extract admin ID from project response
-        const adminId = 
+        const adminId =
           project.admin?._id ||
-          project.adminId || 
+          project.adminId ||
           project.admin;
 
         setProjectData({
@@ -58,20 +94,6 @@ const Project = () => {
     if (projectId) fetchProjectData();
   }, [projectId]);
 
-  const handleSendMessage = (e) => {
-    e.preventDefault();
-    if (!newMessage.trim()) {
-      setError("Message cannot be empty");
-      return;
-    }
-    setMessages(prev => [
-      ...prev,
-      { text: newMessage, sender: user?.username || "You" }
-    ]);
-    setNewMessage("");
-    setError("");
-  };
-
   const handleMemberClick = () => {
     setShowMembers(!showMembers);
   };
@@ -81,9 +103,8 @@ const Project = () => {
       {/* Left Chat Section */}
       <div className="w-1/4 bg-gray-800 flex flex-col border-r border-gray-700 relative">
         {/* Members Panel */}
-        <div className={`absolute top-0 left-0 w-full h-full bg-gray-800 transform transition-transform duration-300 ease-in-out ${
-          showMembers ? "translate-x-0" : "-translate-x-full"
-        }`}>
+        <div className={`absolute top-0 left-0 w-full h-full bg-gray-800 transform transition-transform duration-300 ease-in-out ${showMembers ? "translate-x-0" : "-translate-x-full"
+          }`}>
           <div className="p-4">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-semibold">Collaborators</h2>
@@ -114,7 +135,7 @@ const Project = () => {
 
         {/* Project Header */}
         <div className="w-full bg-gray-700 flex justify-between items-center px-4 py-3">
-          <div 
+          <div
             className="flex flex-col cursor-pointer"
             onClick={handleMemberClick}
           >
@@ -129,8 +150,8 @@ const Project = () => {
               />
             </div>
           </div>
-          <button 
-            onClick={() => navigate(`/project/${projectId}/add-member`)} 
+          <button
+            onClick={() => navigate(`/project/${projectId}/add-member`)}
             className="text-white hover:text-gray-300"
           >
             <i className="ri-user-add-fill text-xl" />
@@ -139,38 +160,50 @@ const Project = () => {
 
         {/* Chat Messages */}
         <div className="flex-1 overflow-y-auto p-4 space-y-3">
-          {messages.map((msg, index) => (
-            <div
-              key={index}
-              className="p-2 bg-gray-700 rounded-lg text-sm break-words"
-            >
-              <span className="text-blue-400 font-medium">{msg.sender}:</span>
-              <span className="ml-1 text-gray-300">{msg.text}</span>
-            </div>
-          ))}
+          {Array.from({ length: 10 }).map((_, index) => {
+            const isUser = index % 2 === 0; // Alternating messages (left & right)
+            return (
+              <div
+                key={index}
+                className={`flex ${isUser ? "justify-end" : "justify-start"}`}
+              >
+                <div
+                  className={`p-2 max-w-[70%] rounded-lg text-sm break-words ${isUser
+                    ? "bg-blue-500 text-white rounded-br-none"
+                    : "bg-gray-700 text-gray-300 rounded-bl-none"
+                    }`}
+                >
+                  <span className="font-medium">
+                    {isUser
+                      ? "You"
+                      : ["Alice", "Bob", "Charlie", "David", "Eve"][
+                      Math.floor(Math.random() * 5)
+                      ]}
+                    :
+                  </span>
+                  <span className="ml-1">
+                    Lorem ipsum dolor sit amet.
+                  </span>
+                </div>
+              </div>
+            );
+          })}
         </div>
 
         {/* Message Input */}
-        <form onSubmit={handleSendMessage} className="p-2 bg-gray-700 flex items-center">
+        <form onSubmit={send} className="p-2 bg-gray-700 flex items-center">
           <div className="flex flex-1 items-center bg-gray-800 rounded-full px-3 py-1">
             <input
               type="text"
-              value={newMessage}
-              onChange={(e) => {
-                setNewMessage(e.target.value);
-                setError("");
-              }}
               placeholder="Type a message..."
               className="flex-1 text-gray-200 bg-transparent focus:outline-none placeholder-gray-400 text-sm"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
             />
           </div>
           <button
             type="submit"
-            disabled={!newMessage.trim()}
-            className={`ml-2 p-2 rounded-full flex items-center justify-center transition 
-              ${newMessage.trim()
-                ? "bg-blue-500 hover:bg-blue-600 cursor-pointer"
-                : "bg-gray-500 cursor-not-allowed"}`}
+            className="ml-2 p-2 rounded-full flex items-center justify-center bg-gray-400 hover:bg-blue-400 cursor-pointer transition"
             style={{ width: "35px", height: "35px" }}
           >
             <i className="ri-send-plane-2-fill text-white text-sm"></i>

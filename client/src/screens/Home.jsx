@@ -156,6 +156,7 @@ const Home = () => {
         <EditProjectModal
           project={selectedProject}
           onClose={() => setShowEditModal(false)}
+          onUpdate={handleProjectUpdate}
         />
       )}
     </div>

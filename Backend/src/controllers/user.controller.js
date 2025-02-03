@@ -21,10 +21,10 @@ const generateAccessandRefreshToken = async(userId) => {
 }
 
 const registerUser = asyncHandler(async (req, res) => {
-    const { username , email, dob , role , password } = req.body;
+    const { username , email, dob , password } = req.body;
 
     if (
-        [username, email, dob, password, role].some(
+        [username, email, dob, password].some(
             (field) => field?.trim() === ""
         )
     ) {
@@ -43,7 +43,6 @@ const registerUser = asyncHandler(async (req, res) => {
         username,
         email,
         dob,
-        role,
         password
     });
 
