@@ -4,20 +4,22 @@ import axiosInstance from '../config/axios.js'; // Ensure axiosInstance is corre
 // Create context to manage user data across the app
 export const UserContext = createContext();
 
-// UserProvider component to wrap the app and provide user data context
 export const UserProvider = ({ children }) => {
     const [user, setUser] = useState(() => {
-        // Check if user data is stored in localStorage and load it
         const storedUser = localStorage.getItem('user');
-        return storedUser ? JSON.parse(storedUser) : null;
+        if (storedUser) {
+            const parsedUser = JSON.parse(storedUser);
+            return parsedUser && parsedUser._id ? parsedUser : null;
+        }
+        return null;
     });
 
     // Effect to save user data to localStorage when user state changes
     useEffect(() => {
-        if (user) {
-            localStorage.setItem('user', JSON.stringify(user)); // Store in localStorage if user is logged in
+        if (user && user._id) {
+            localStorage.setItem('user', JSON.stringify(user));
         } else {
-            localStorage.removeItem('user'); // Remove from localStorage if user logs out
+            localStorage.removeItem('user');
         }
     }, [user]);
 
@@ -25,19 +27,22 @@ export const UserProvider = ({ children }) => {
     const refreshToken = async () => {
         try {
             const response = await axiosInstance.post('/user/refresh-token');
-            setUser(response.data.user); // Set user data to state if token refresh is successful
+            if (response.data.user && response.data.user._id) {
+                setUser(response.data.user);
+            } else {
+                setUser(null);
+            }
         } catch (err) {
-            setUser(null); // If token refresh fails, clear user data
+            setUser(null);
         }
     };
 
-    // Optionally, you can check for the user on mount or on every render
+    // Effect to check token expiration and refresh if needed
     useEffect(() => {
-        if (user) {
-            const tokenExpiration = new Date(user.tokenExpiration); // Assuming token expiration is in user object
+        if (user && user.tokenExpiration) {
+            const tokenExpiration = new Date(user.tokenExpiration);
             const now = new Date();
             if (tokenExpiration < now) {
-                // Refresh token if it is expired
                 refreshToken();
             }
         }
@@ -50,5 +55,4 @@ export const UserProvider = ({ children }) => {
     );
 };
 
-// Custom hook to access user context in any component
 export const useUser = () => useContext(UserContext);

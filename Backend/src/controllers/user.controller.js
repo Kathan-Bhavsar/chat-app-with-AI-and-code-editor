@@ -57,7 +57,7 @@ const registerUser = asyncHandler(async (req, res) => {
     const { accessToken, refreshToken } = await generateAccessandRefreshToken(user._id);
 
     const RegisterUser = await User.findById(user._id).select(
-        "-password -refreshToken -dob -createdAt -updatedAt -email -role -_id"
+        "-password -refreshToken -dob -createdAt -updatedAt -email -role"
     );
 
     const options = {
@@ -107,7 +107,7 @@ const loginUser = asyncHandler(async (req, res) => {
     const { accessToken, refreshToken } = await generateAccessandRefreshToken(user._id);
 
     const loggedInUser = await User.findById(user._id).select(
-        "-password -refreshToken -dob -createdAt -updatedAt -email -role -_id"
+        "-password -refreshToken -dob -createdAt -updatedAt -email -role"
     );
 
     const options = {

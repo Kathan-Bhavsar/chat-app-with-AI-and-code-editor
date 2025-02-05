@@ -59,7 +59,7 @@ const Home = () => {
       // Instead of updating state manually, we fetch the updated project list
       fetchProjects();  // Refresh the project list after update
     } catch (err) {
-      setError('Failed to update project.');
+      setError('unauthroized to update project.');
     }
   };
 
@@ -70,7 +70,7 @@ const Home = () => {
         await axiosInstance.delete(`/project/delete-project/${id}`);
         setProjects((prevProjects) => prevProjects.filter(project => project._id !== id));
       } catch (err) {
-        setError('Failed to delete project.');
+        setError('unauthroized to delete project.');
       }
     }
   };
