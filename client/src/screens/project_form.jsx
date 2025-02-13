@@ -38,40 +38,46 @@ const ProjectForm = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">
-      <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-md">
-        <h2 className="text-2xl font-semibold text-center mb-4">Create New Project</h2>
-
-        {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
-
-        <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0f1218] to-[#1a1f2b] p-4">
+      <div className="bg-[#1a2432] border border-[#2a3241] rounded-3xl shadow-2xl w-full max-w-md p-8">
+        <h2 className="text-4xl font-extrabold text-white mb-8 text-center">
+          Create New Project
+        </h2>
+  
+        {error && (
+          <div className="bg-red-500/10 border border-red-500/30 text-red-400 p-3 rounded-lg mb-6 text-center">
+            {error}
+          </div>
+        )}
+  
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block mb-1">Project Name</label>
+            <label className="block text-white mb-2">Project Name</label>
             <input 
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full p-2 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none focus:border-blue-500"
+              className="w-full px-4 py-3 rounded-xl bg-[#253042] text-white border border-[#2a3241] focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50"
               required
             />
           </div>
-
+  
           <div>
-            <label className="block mb-1">Description</label>
+            <label className="block text-white mb-2">Description</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full p-2 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none focus:border-blue-500"
+              className="w-full px-4 py-3 rounded-xl bg-[#253042] text-white border border-[#2a3241] focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50"
               minLength={10}
+              rows={4}
               required
             />
           </div>
-
+  
           <button
             type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center gap-2"
+            className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 rounded-xl hover:from-blue-600 hover:to-blue-700 transition duration-300"
           >
-            <i className="ri-add-line text-xl"></i>
             Create Project
           </button>
         </form>

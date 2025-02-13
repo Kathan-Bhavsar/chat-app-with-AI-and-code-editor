@@ -20,9 +20,28 @@ body {
   font-family: "Mona-sans", sans-serif;
 }
 
-.message-box{
+.message-box {
   scroll-behavior: smooth;
 }
-.message-box::-webkit-scrollbar{
+
+/* Remove message box scrollbar override */
+/* .message-box::-webkit-scrollbar {
   display: none;
+} */
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #374151;
 }

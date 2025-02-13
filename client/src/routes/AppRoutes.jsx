@@ -6,10 +6,12 @@ import Home from '../screens/Home.jsx';
 import ProjectForm from '../screens/project_form.jsx';
 import Project from '../screens/project.jsx';
 import AddMember from '../screens/Addmember.jsx';
+import GlobalToaster from '../assets/globaltoast.jsx';
 
 const AppRoutes = () => {
   return (
    <BrowserRouter>
+   <GlobalToaster />
     <Routes>
         <Route path="/" element = {<Home />} />
         <Route path="/login" element = {<Login />} />

@@ -1,8 +1,16 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axiosInstance from '../config/axios.js'; // Make sure axios is correctly imported
+import axiosInstance from '../config/axios.js';
 import { UserContext } from '../context/user.context.jsx';
 import EditProjectModal from '../screens/editproject.jsx';
+import toast from 'react-hot-toast';
+import { 
+  PlusIcon, 
+  LogOutIcon, 
+  EditIcon, 
+  TrashIcon, 
+  FolderIcon,
+} from 'lucide-react';
 
 const Home = () => {
   const [projects, setProjects] = useState([]);
@@ -10,7 +18,7 @@ const Home = () => {
   const [error, setError] = useState(null);
   const [selectedProject, setSelectedProject] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
-  const { user, setUser } = useContext(UserContext); // Get user context
+  const { user, setUser } = useContext(UserContext);
   const navigate = useNavigate();
 
   // Fetch all projects
@@ -31,9 +39,8 @@ const Home = () => {
   useEffect(() => {
     const checkAuth = async () => {
       if (!user) {
-        navigate('/login'); // Redirect to login if not authenticated
+        navigate('/login');
       } else {
-        // Fetch projects if authenticated
         await fetchProjects();
       }
     };
@@ -41,117 +48,165 @@ const Home = () => {
   }, [user, navigate]);
 
   const handleCreateProject = () => {
-    navigate('/create-project');  // Navigate to the form page
+    navigate('/create-project');
   };
 
   const handleLogout = async () => {
     try {
       await axiosInstance.post('/user/logout');
-      setUser(null); // Clear user data
-      navigate('/login'); // Redirect to login page
+      setUser(null);
+      navigate('/login');
+      toast.success("Logged out successfully.");
     } catch (err) {
       console.error('Logout error:', err);
     }
   };
 
-  const handleProjectUpdate = async (updatedProject) => {
+  const handleProjectUpdate = async () => {
     try {
-      // Instead of updating state manually, we fetch the updated project list
-      fetchProjects();  // Refresh the project list after update
+      await fetchProjects();
+      toast.success("Project updated successfully.");
     } catch (err) {
-      setError('unauthroized to update project.');
+      setError('Unauthorized to update project.');
     }
   };
 
-  // DELETE Project Function
   const handleDeleteProject = async (id) => {
     if (window.confirm("Are you sure you want to delete this project?")) {
       try {
         await axiosInstance.delete(`/project/delete-project/${id}`);
         setProjects((prevProjects) => prevProjects.filter(project => project._id !== id));
+        toast.success("Project deleted successfully.");
       } catch (err) {
-        setError('unauthroized to delete project.');
+        toast.error("Unable to delete project.");
       }
     }
   };
 
   return (
-    <div className="bg-gray-900 min-h-screen text-white p-8 relative">
-      <button
-        onClick={handleCreateProject}
-        className="fixed top-6 left-6 bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-6 rounded-full shadow-lg transition-all duration-200 hover:scale-105 flex items-center gap-2 z-10"
-      >
-        <i className="ri-add-line text-xl"></i>
-        Create Project
-      </button>
+    <div className="min-h-screen bg-gradient-to-br from-[#0f1218] to-[#1a1f2b] text-white">
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Header Section with Simplified Layout */}
+        <div className="flex justify-between items-center mb-16">
+          <button
+            onClick={handleCreateProject}
+            className="flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors group"
+          >
+            <PlusIcon className="w-5 h-5" />
+            <span>Create Project</span>
+          </button>
 
-      <button
-        onClick={handleLogout}
-        className="fixed top-6 right-6 bg-red-600 hover:bg-red-700 text-white font-medium py-3 px-6 rounded-full shadow-lg transition-all duration-200"
-      >
-        Logout
-      </button>
+          <button
+            onClick={handleLogout}
+            className="flex items-center justify-center space-x-2 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg transition-colors"
+          >
+            <LogOutIcon className="w-5 h-5" />
+            <span>Logout</span>
+          </button>
+        </div>
 
-      <div className="max-w-7xl mx-auto mt-16">
-        <h1 className="text-4xl font-bold mb-8 text-gray-100">Your Projects</h1>
+        {/* Projects Section */}
+        <div className="space-y-8">
+          <h2 className="text-3xl font-semibold text-white border-b border-[#2a3241] pb-4">
+            Your Projects
+          </h2>
 
-        {error && <p className="text-red-400 mb-6">{error}</p>}
+          {error && (
+            <div className="bg-red-500/10 border border-red-500/30 text-red-400 p-4 rounded-lg">
+              {error}
+            </div>
+          )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {loading ? (
-            <div className="col-span-full text-center py-12">
-              <p className="text-gray-500 text-xl">Loading projects...</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1, 2, 3].map((_, index) => (
+                <div 
+                  key={index} 
+                  className="bg-[#1a2432] rounded-xl p-6 animate-pulse space-y-4"
+                >
+                  <div className="h-8 bg-gray-700 rounded w-3/4"></div>
+                  <div className="h-4 bg-gray-700 rounded w-full"></div>
+                  <div className="h-4 bg-gray-700 rounded w-5/6"></div>
+                </div>
+              ))}
             </div>
           ) : projects.length > 0 ? (
-            projects.map((project) => (
-              <div
-                key={project._id}
-                onClick={() => navigate(`/project/${project._id}`)}  // Navigate to Project page on click
-                className="bg-gray-800 rounded-xl p-6 hover:bg-gray-750 transition-all duration-200 cursor-pointer shadow-xl hover:shadow-2xl group relative"
-              >
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedProject(project);
-                    setShowEditModal(true);
-                  }}
-                  className="absolute top-4 right-4 text-gray-400 hover:text-indigo-400 transition-colors"
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {projects.map((project) => (
+                <div
+                  key={project._id}
+                  className="bg-[#1a2432] border border-[#2a3241] rounded-xl p-6 hover:shadow-2xl transition-all duration-300 group relative overflow-hidden"
                 >
-                  <i className="ri-pencil-fill text-lg"></i>
-                </button>
-
-                <div className="flex flex-col h-full">
-                  <div className="mb-4">
-                    <h2 className="text-2xl font-semibold text-gray-100 group-hover:text-indigo-400 transition-colors">
-                      {project.name}
-                    </h2>
-                    <p className="text-gray-400 mt-2 line-clamp-3">{project.description}</p>
-                  </div>
-
-                  <div className="mt-auto flex items-center justify-between text-sm text-gray-500">
-                    <span>Last modified: {new Date(project.updatedAt).toLocaleDateString()}</span>
-                    
+                  {/* Edit Icon at Top Right */}
+                  <div className="absolute top-4 right-4 z-10">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleDeleteProject(project._id);
+                        setSelectedProject(project);
+                        setShowEditModal(true);
                       }}
-                      className="text-gray-400 hover:text-red-400 transition-colors"
+                      className="text-gray-400 hover:text-blue-400 transition-colors"
                     >
-                      <i className="ri-delete-bin-6-fill text-lg"></i>
+                      <EditIcon className="w-5 h-5" />
                     </button>
                   </div>
+
+                  {/* Project Content */}
+                  <div 
+                    onClick={() => navigate(`/project/${project._id}`)}
+                    className="cursor-pointer space-y-4"
+                  >
+                    <div className="flex items-center space-x-4">
+                      <FolderIcon className="w-10 h-10 text-blue-500" />
+                      <h3 className="text-2xl font-bold text-white group-hover:text-blue-400 transition-colors">
+                        {project.name}
+                      </h3>
+                    </div>
+
+                    <p className="text-gray-400 line-clamp-3 text-sm">
+                      {project.description}
+                    </p>
+                  </div>
+
+                  {/* Project Footer with Delete Icon */}
+                  <div className="flex justify-between items-center mt-4 pt-4 border-t border-[#2a3241]">
+                    <div className="text-xs text-gray-500">
+                      Last modified: {new Date(project.updatedAt).toLocaleDateString()}
+                    </div>
+                    <div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteProject(project._id);
+                        }}
+                        className="text-gray-400 hover:text-red-400 transition-colors"
+                      >
+                        <TrashIcon className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))
+              ))}
+            </div>
           ) : (
-            <div className="col-span-full text-center py-12">
-              <p className="text-gray-500 text-xl">No projects found. Create one!</p>
+            <div className="text-center py-16 bg-[#1a2432] rounded-xl border border-[#2a3241]">
+              <FolderIcon className="mx-auto w-16 h-16 text-gray-600 mb-6" />
+              <p className="text-gray-400 text-xl mb-6">
+                No projects found. Start your journey now!
+              </p>
+              <button
+                onClick={handleCreateProject}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg transition-colors flex items-center justify-center mx-auto space-x-2 group"
+              >
+                <PlusIcon className="w-5 h-5" />
+                <span>Create Your First Project</span>
+              </button>
             </div>
           )}
         </div>
       </div>
 
+      {/* Edit Project Modal */}
       {showEditModal && selectedProject && (
         <EditProjectModal
           project={selectedProject}

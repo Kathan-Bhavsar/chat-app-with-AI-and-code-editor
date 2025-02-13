@@ -67,7 +67,7 @@ const getProject = asyncHandler(async (req, res) => {
     const project = await Project.findOne({
         _id: project_id,
         members: user_id
-    });
+    }).populate('admin', '_id username');
 
     if (!project) {
         throw new ApiError(404, 'Project Not Found!');
@@ -90,7 +90,6 @@ const updateProject = asyncHandler(async (req, res) => {
     if (!project.admin.equals(user_id)) {
         throw new ApiError(401, 'You are not authorized to update this project!');
     };
-
 
     if (!project) {
         throw new ApiError(404, 'Project Not Found!');

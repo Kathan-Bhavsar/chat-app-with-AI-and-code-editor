@@ -2,6 +2,7 @@ import React, { useState, useContext, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axiosInstance from "../config/axios.js";
 import { UserContext } from "../context/user.context.jsx";
+import { toast } from "react-hot-toast";
 
 const AddMember = () => {
   const { projectId } = useParams();
@@ -16,16 +17,21 @@ const AddMember = () => {
   useEffect(() => {
     const fetchProjectDetails = async () => {
       try {
-        const response = await axiosInstance.get(`/project/${projectId}`);
-        const project = response.data;
+        const response = await axiosInstance.get(`/project/getproject/${projectId}`); 
+        const project = response.data.message;
 
-        if (project.adminId === user._id) {
+        if (project.admin?._id === user._id) {
           setIsAdmin(true);
         } else {
           setError("Unauthorized access.");
         }
       } catch (err) {
-        setError("Unauthorized access.");
+        console.error("Error fetching project details:", err); // Debugging
+        if (err.response?.status === 401) {
+          setError("Unauthorized access.");
+        } else {
+          setError(err.response?.data?.message || "Failed to fetch project details.");
+        }
       }
     };
 
@@ -49,7 +55,7 @@ const AddMember = () => {
       setUsername(""); // Clear input after adding
       navigate(`/project/${projectId}`);
     } catch (err) {
-      setError(err.response?.data?.message || "Something went wrong. Please try again.");
+      toast.error(err.response?.data?.message || "Member already exists.");
     } finally {
       setLoading(false);
     }
