@@ -18,7 +18,7 @@ export const UserProvider = ({ children }) => {
             console.log(response);
             
             if (response.data.statuscode === 200 && response.data.success) {
-                setUser(response.data.data); // Update user state
+                setUser(response.data.data.user); // Update user state
                 return { status: response.data.statuscode }; // FIXED: Return a response object
             }
             // FIXED: Added explicit return for non-success cases

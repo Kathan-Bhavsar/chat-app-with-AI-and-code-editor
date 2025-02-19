@@ -62,7 +62,7 @@ const AddMember = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">
+    <div className="min-h-screen flex items-center justify-center background text-white">
       <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-md">
         <h2 className="text-2xl font-semibold text-center mb-4">Add Team Member</h2>
 

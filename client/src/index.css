@@ -41,6 +41,10 @@ body {
   background: url("/images/home-bg.png") no-repeat center center/cover;
 }
 
+.background{
+  background: url("/images/home-bg.png") no-repeat center center/cover;
+}
+
 .custom-scrollbar::-webkit-scrollbar {
   width: 3px;
 }

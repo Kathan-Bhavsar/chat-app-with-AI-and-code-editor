@@ -4,13 +4,14 @@ import axiosInstance from "../config/axios";
 import { UserContext } from "../context/user.context.jsx";
 import { initializeSocket, disconnectSocket, recieveMessage, sendMessage } from "../config/socketio.js";
 import { Users, Send, Plus, Crown, X, MessageSquare } from 'lucide-react';
+import { toast } from "react-hot-toast";
 // import { set } from "mongoose";
 
 const Project = () => {
   // ... (previous state and ref declarations remain the same)
   const navigate = useNavigate();
   const { projectId } = useParams();
-  const { user } = useContext(UserContext);
+  const { user , setUser } = useContext(UserContext);
   const messagesEndRef = useRef(null);
   const chatContainerRef = useRef(null);
 
@@ -149,7 +150,7 @@ const Project = () => {
       <div className="w-1/4 bg-[#1a2432] flex flex-col border-r border-[#2a3241] relative">
         {/* Members Panel */}
         <div
-          className={`absolute top-0 left-0 w-full h-full bg-[#1a2432] transform transition-transform duration-300 ease-in-out ${
+          className={`absolute top-0 left-0 w-full h-full background transform transition-transform duration-300 ease-in-out ${
             showMembers ? "translate-x-0" : "-translate-x-full"
           } z-20`}
         >
@@ -184,7 +185,7 @@ const Project = () => {
         </div>
 
         {/* Project Header */}
-        <div className="bg-[#253042] border-b border-[#2a3241] flex justify-between items-center px-6 py-4">
+        <div className="bg-[#2a3241] border-b border-[#2a3241] flex justify-between items-center px-6 py-4">
           <div
             className="flex flex-col cursor-pointer"
             onClick={handleMemberClick}
@@ -206,7 +207,7 @@ const Project = () => {
         </div>
 
         {/* Chat Messages Container */}
-        <div className="flex flex-col flex-1 min-h-0">
+        <div className="flex flex-col flex-1 min-h-0 background">
           <div 
             ref={chatContainerRef}
             className="flex-1 overflow-y-auto custom-scrollbar"
@@ -238,7 +239,7 @@ const Project = () => {
           </div>
 
           {/* Message Input */}
-          <form onSubmit={send} className="p-4 bg-[#253042] border-t border-[#2a3241]">
+          <form onSubmit={send} className="p-4 bg-[#141c27] border-t border-[#2a3241]">
             <div className="flex items-center space-x-2">
               <input
                 type="text"

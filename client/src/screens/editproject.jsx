@@ -27,7 +27,7 @@ const EditProjectModal = ({ project, onClose, onUpdate }) => {
         throw new Error("Project update failed. Please try again.");
       }
     } catch (err) {
-      toast.error("Unable to update project.");
+      toast.error("Unauthorized to update project.");
     } finally {
       setLoading(false);
     }

@@ -38,7 +38,7 @@ const ProjectForm = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0f1218] to-[#1a1f2b] p-4">
+    <div className="min-h-screen flex items-center justify-center background p-4">
       <div className="bg-[#1a2432] border border-[#2a3241] rounded-3xl shadow-2xl w-full max-w-md p-8">
         <h2 className="text-4xl font-extrabold text-white mb-8 text-center">
           Create New Project
