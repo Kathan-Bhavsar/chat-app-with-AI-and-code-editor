@@ -29,6 +29,18 @@ body {
   display: none;
 } */
 
+.login-background{
+  background: url("/images/home-bg.png") no-repeat center center/cover;
+}
+
+.register-background{
+  background: url("/images/home-bg.png") no-repeat center center/cover;
+}
+
+.home-background{
+  background: url("/images/home-bg.png") no-repeat center center/cover;
+}
+
 .custom-scrollbar::-webkit-scrollbar {
   width: 3px;
 }

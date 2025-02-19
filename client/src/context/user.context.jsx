@@ -1,58 +1,72 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import axiosInstance from '../config/axios.js'; // Ensure axiosInstance is correctly imported
+import axiosInstance from '../config/axios.js'; // Your Axios instance
+import { useNavigate } from 'react-router-dom';
 
-// Create context to manage user data across the app
+// Create UserContext
 export const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
     const [user, setUser] = useState(() => {
         const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-            const parsedUser = JSON.parse(storedUser);
-            return parsedUser && parsedUser._id ? parsedUser : null;
-        }
-        return null;
+        return storedUser ? JSON.parse(storedUser) : null;
     });
 
-    // Effect to save user data to localStorage when user state changes
+    const navigate = useNavigate();
+
+    // Save user to localStorage whenever it changes
     useEffect(() => {
-        if (user && user._id) {
+        if (user) {
             localStorage.setItem('user', JSON.stringify(user));
         } else {
             localStorage.removeItem('user');
         }
     }, [user]);
 
-    // Function to refresh token if the access token expires
-    const refreshToken = async () => {
+    // Function to ping the server and check authentication
+    const authenticateUser = async () => {
         try {
-            const response = await axiosInstance.post('/user/refresh-token');
-            if (response.data.user && response.data.user._id) {
-                setUser(response.data.user);
-            } else {
-                setUser(null);
+            const response = await axiosInstance.get('/user/refresh-token');
+            if (response.data.statusCode === 200 && response.data.success) {
+                setUser(response.data.data); // Update user state
+                return { status: 200 };
             }
-        } catch (err) {
-            setUser(null);
+        } catch (error) {
+            if (error.response?.status === 401) {
+                setUser(null); // Clear user state
+                navigate('/login'); // Redirect to login
+                return { status: 401 };
+            }
+            console.error('Error authenticating user:', error);
+            return { status: error.response?.status || 500 };
         }
     };
 
-    // Effect to check token expiration and refresh if needed
-    useEffect(() => {
-        if (user && user.tokenExpiration) {
-            const tokenExpiration = new Date(user.tokenExpiration);
-            const now = new Date();
-            if (tokenExpiration < now) {
-                refreshToken();
-            }
+    // Function to ping the server on initial load
+    const pingServer = async () => {
+        const response = await authenticateUser();
+        if (response.status === 200) {
+            console.log('Authorized user');
+        } else if (response.status === 401) {
+            console.log('Unauthorized user');
+            navigate('/login');
         }
-    }, [user]);
+    };
+
+    // Ping the server when the component mounts
+    useEffect(() => {
+        if (!user) {
+            pingServer();
+        }
+    }, []);
 
     return (
-        <UserContext.Provider value={{ user, setUser }}>
+        <UserContext.Provider value={{ user, setUser, authenticateUser }}>
             {children}
         </UserContext.Provider>
     );
 };
 
+// Custom hook to use UserContext
 export const useUser = () => useContext(UserContext);
+
+export default UserProvider;

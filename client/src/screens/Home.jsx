@@ -18,7 +18,7 @@ const Home = () => {
   const [error, setError] = useState(null);
   const [selectedProject, setSelectedProject] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
-  const { user, setUser } = useContext(UserContext);
+  const { user, authenticateUser } = useContext(UserContext); // Use authenticateUser from context
   const navigate = useNavigate();
 
   // Fetch all projects
@@ -37,15 +37,22 @@ const Home = () => {
 
   // Ensure the user is authenticated before accessing the homepage
   useEffect(() => {
-    const checkAuth = async () => {
-      if (!user) {
-        navigate('/login');
-      } else {
-        await fetchProjects();
+    const checkAuthAndFetchProjects = async () => {
+      try {
+        const authResponse = await authenticateUser(); // Check if the user is authenticated
+        if (authResponse.status === 200) {
+          await fetchProjects(); // Fetch projects if authenticated
+        } else if (authResponse.status === 401) {
+          navigate('/login'); // Redirect to login if not authenticated
+        }
+      } catch (err) {
+        console.error('Error checking authentication:', err);
+        navigate('/login'); // Redirect to login on error
       }
     };
-    checkAuth();
-  }, [user, navigate]);
+
+    checkAuthAndFetchProjects();
+  }, [authenticateUser, navigate]);
 
   const handleCreateProject = () => {
     navigate('/create-project');
@@ -54,7 +61,7 @@ const Home = () => {
   const handleLogout = async () => {
     try {
       await axiosInstance.post('/user/logout');
-      setUser(null);
+      localStorage.removeItem('user'); // Clear user from localStorage
       navigate('/login');
       toast.success("Logged out successfully.");
     } catch (err) {
@@ -84,7 +91,7 @@ const Home = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0f1218] to-[#1a1f2b] text-white">
+    <div className="min-h-screen home-background text-white">
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header Section with Simplified Layout */}
         <div className="flex justify-between items-center mb-16">

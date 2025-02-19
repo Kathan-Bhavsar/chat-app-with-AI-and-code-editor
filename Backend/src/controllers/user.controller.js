@@ -154,50 +154,27 @@ const logoutUser = asyncHandler(async (req, res) => {
 });
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
-    const incomingrefreshToken = req.cookies.refreshToken || req.body.refreshToken;
+    const user = req.user_.id;
 
-    if (!incomingrefreshToken) {
-        throw new ApiError(400, "You are not authenticated!");
+    if (!user) {
+        throw new ApiError(401, "User not logged in!");
     }
 
-    try {
-        const decodedToken = jwt.verify(incomingrefreshToken, process.env.REFRESH_TOKEN_SECRET);
-    
-        if (!decodedToken) {
-            throw new ApiError(400, "Invalid Refresh Token!");
-        }
-    
-        const user = await User.findById(decodedToken?._id);
-    
-        if (!user) {
-            throw new ApiError(404, "User Not Found!");
-        }
-    
-        if(user.refreshToken !== incomingrefreshToken){
-            throw new ApiError(400, "Invalid Refresh Token!");
-        }
-    
-        const options = {
-            httpOnly: true,
-            secure: true,
-        };
-    
-        const { accessToken, newRefreshToken } = await generateAccessandRefreshToken(user._id);
-    
-        return res
-        .status(200)
-        .cookie("accessToken", accessToken, options)
-        .cookie("refreshToken", newRefreshToken, options)
-        .json(
+    const loggedInUser = await User.findById(user).select(
+        "-password -refreshToken -dob -createdAt -updatedAt"
+    );
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
             200,
             {
-                accessToken, refreshToken:newRefreshToken
+                user: loggedInUser,
             },
-            "Access Token and Refresh Token Generated Successfully!"
-        );
-    } catch (error) {
-        throw new ApiError(400, error.message || "Invalid Refresh Token!");
-    }
+            "User Logged In Successfully!"
+        )
+    );
 });
 
 const changePassword = asyncHandler(async (req, res) => {

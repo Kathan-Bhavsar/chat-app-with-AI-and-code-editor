@@ -1,9 +1,9 @@
 import React, { useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from '../config/axios.js';
+import axiosInstance from '../config/axios.js';
 import { UserContext } from '../context/user.context.jsx';
 import { toast } from 'react-hot-toast';
-import { Lock, User, ArrowRight } from 'lucide-react';
+import { Lock, User } from 'lucide-react';
 
 function Login() {
   const [username, setUsername] = useState('');
@@ -25,7 +25,7 @@ function Login() {
     }
 
     try {
-      const response = await axios.post('/user/login', { username, password });
+      const response = await axiosInstance.post('/user/login', { username, password });
       const { data } = response.data;
       if (data?.user) {
         setUser(data.user);
@@ -42,12 +42,14 @@ function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0f1218] to-[#1a1f2b] p-4">
-      <div className="bg-[#1a2432] border border-[#2a3241] rounded-3xl shadow-2xl w-full max-w-md overflow-hidden">
-        <div className="p-8 pb-0">
-          <h2 className="text-4xl font-extrabold text-white mb-7 text-center">
-            Log In
-          </h2>
+    <div className="h-screen flex items-center justify-center bg-gradient-to-br from-[#2f446d] to-[#555e72] overflow-hidden login-background">
+      <div className="flex w-full max-w-6xl bg-[#141c27] rounded-3xl shadow-2xl overflow-hidden h-auto max-h-[85vh]">
+        {/* Form Section (Left Side) */}
+        <div className="w-full lg:w-1/2 p-6 lg:p-12 flex flex-col justify-center">
+          <div className="text-center mb-10">
+            <h2 className="text-4xl font-extrabold text-white mb-2">Log In</h2>
+            <p className="text-gray-400">Welcome back! Please enter your details.</p>
+          </div>
 
           {error && (
             <div className="bg-red-500/10 border border-red-500/30 text-red-400 p-3 rounded-lg mb-6 text-center animate-pulse">
@@ -55,7 +57,7 @@ function Login() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6 w-full max-w-md mx-auto">
             <div className="relative">
               <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
                 <User className="w-5 h-5" />
@@ -84,15 +86,6 @@ function Login() {
               />
             </div>
 
-            {/* <div className="flex justify-end">
-              <Link 
-                to="/forgot-password" 
-                className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
-              >
-                Forgot Password?
-              </Link>
-            </div> */}
-
             <button
               type="submit"
               disabled={isLoading}
@@ -101,25 +94,36 @@ function Login() {
               {isLoading ? (
                 <span className="animate-pulse">Signing In...</span>
               ) : (
-                <>
-                  <span>Sign In</span>
-                  {/* <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" /> */}
-                </>
+                <span>Sign In</span>
               )}
             </button>
           </form>
+
+          <div className="mt-8 text-center">
+            <p className="text-gray-400 text-sm">
+              Don't have an account? {' '}
+              <Link 
+                to="/register" 
+                className="text-blue-400 hover:text-blue-300 font-semibold transition-colors"
+              >
+                Create an account
+              </Link>
+            </p>
+          </div>
         </div>
 
-        <div className="bg-[#253042] p-6 text-center mt-4 border-t border-[#2a3241]">
-          <p className="text-gray-400 text-sm">
-            Don't have an account? {' '}
-            <Link 
-              to="/register" 
-              className="text-blue-400 hover:text-blue-300 font-semibold transition-colors"
-            >
-              Create an account
-            </Link>
-          </p>
+        {/* Image Section (Right Side) */}
+        <div className="hidden lg:block w-1/2 relative">
+          <img 
+            src="/images/Ai.jpg" 
+            alt="AI Background"
+            className="absolute inset-0 w-full h-full object-cover object-center"
+          />
+          <div className="absolute inset-0 bg-gradient-to-l from-transparent to-[#1a2432]/80"></div>
+          <div className="absolute bottom-0 left-0 right-0 p-12 z-10">
+            <h2 className="text-4xl font-bold text-white mb-4">Welcome Back!</h2>
+            <p className="text-gray-300">Collaborate, Create, and Manage Projects with AI Assistance</p>
+          </div>
         </div>
       </div>
     </div>

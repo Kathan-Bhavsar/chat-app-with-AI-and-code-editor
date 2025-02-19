@@ -4,6 +4,7 @@ import axiosInstance from "../config/axios";
 import { UserContext } from "../context/user.context.jsx";
 import { initializeSocket, disconnectSocket, recieveMessage, sendMessage } from "../config/socketio.js";
 import { Users, Send, Plus, Crown, X, MessageSquare } from 'lucide-react';
+// import { set } from "mongoose";
 
 const Project = () => {
   // ... (previous state and ref declarations remain the same)
@@ -102,7 +103,19 @@ const Project = () => {
       ]);
     };
 
-    initializeSocket(projectId);
+    const socket = initializeSocket(projectId);
+    socket.on('forceLogout' , () => {
+      setUser(null);
+      navigate('/login');
+      toast.error('Session expired. Please login again.');
+    })
+
+    socket.on('connect_error', (error) => {
+      if (error.message.includes('401')) {
+        localStorage.removeItem('user');
+        navigate('/login');
+      }
+    });
     recieveMessage(projectId, "project-message", handleIncomingMessage);
 
     return () => {
