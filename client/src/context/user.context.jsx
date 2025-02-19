@@ -6,32 +6,23 @@ import { useNavigate } from 'react-router-dom';
 export const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
-    const [user, setUser] = useState(() => {
-        const storedUser = localStorage.getItem('user');
-        return storedUser ? JSON.parse(storedUser) : null;
-    });
+    const [user, setUser] = useState({});
 
     const navigate = useNavigate();
-
-    // Save user to localStorage whenever it changes
-    useEffect(() => {
-        if (user) {
-            localStorage.setItem('user', JSON.stringify(user));
-        } else {
-            localStorage.removeItem('user');
-        }
-    }, [user]);
 
     // Function to ping the server and check authentication
     const authenticateUser = async () => {
         try {
             const response = await axiosInstance.post('/user/refresh-token');
-            if (response.data.statusCode === 200 && response.data.success) {
+
+            console.log(response);
+            
+            if (response.data.statuscode === 200 && response.data.success) {
                 setUser(response.data.data); // Update user state
-                return { status: 200 }; // FIXED: Return a response object
+                return { status: response.data.statuscode }; // FIXED: Return a response object
             }
             // FIXED: Added explicit return for non-success cases
-            return { status: response.data.statusCode || 403 };
+            return { status: response.data.statuscode };
         } catch (error) {
             if (error.response?.status === 401) {
                 setUser(null); // Clear user state
@@ -57,13 +48,6 @@ export const UserProvider = ({ children }) => {
             navigate('/login');
         }
     };
-
-    // Ping the server when the component mounts
-    useEffect(() => {
-        if (!user) {
-            pingServer();
-        }
-    }, []);
 
     return (
         <UserContext.Provider value={{ user, setUser, authenticateUser }}>

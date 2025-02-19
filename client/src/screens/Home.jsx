@@ -1,14 +1,14 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axiosInstance from '../config/axios.js';
 import { UserContext } from '../context/user.context.jsx';
 import EditProjectModal from '../screens/editproject.jsx';
 import toast from 'react-hot-toast';
-import { 
-  PlusIcon, 
-  LogOutIcon, 
-  EditIcon, 
-  TrashIcon, 
+import {
+  PlusIcon,
+  LogOutIcon,
+  EditIcon,
+  TrashIcon,
   FolderIcon,
 } from 'lucide-react';
 
@@ -36,29 +36,23 @@ const Home = () => {
   };
 
   // FIXED: Properly handle authentication response
-  useEffect(() => {
-    const checkAuthAndFetchProjects = async () => {
-      try {
-        const authResponse = await authenticateUser();
-        
-        // Added logging to help with debugging
-        console.log("Authentication response:", authResponse);
-        
-        if (authResponse && authResponse.status === 200) {
-          await fetchProjects();
-        } else {
-          // Don't redirect here - let the context handle redirects
-          console.log("Not authenticated or authentication failed");
-        }
-      } catch (err) {
-        console.error('Error checking authentication:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const checkAuthAndFetchProjects = async () => {
+    const authResponse = await authenticateUser();
 
+    console.log("Authentication response:", authResponse);
+
+    if (authResponse && authResponse.status === 200) {
+      await fetchProjects();
+      setLoading(false);
+    } else {
+      console.log("Not authenticated or authentication failed");
+      navigate('/login');
+    }
+  };
+
+  useEffect(() => {
     checkAuthAndFetchProjects();
-  }, [authenticateUser]);
+  }, []);
 
   const handleCreateProject = () => {
     navigate('/create-project');
@@ -101,13 +95,13 @@ const Home = () => {
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header Section with Simplified Layout */}
         <div className="flex justify-between items-center mb-16">
-          <button
-            onClick={handleCreateProject}
+          <Link
+            to={'/create-project'}
             className="flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors group"
           >
             <PlusIcon className="w-5 h-5" />
             <span>Create Project</span>
-          </button>
+          </Link>
 
           <button
             onClick={handleLogout}
@@ -133,8 +127,8 @@ const Home = () => {
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[1, 2, 3].map((_, index) => (
-                <div 
-                  key={index} 
+                <div
+                  key={index}
                   className="bg-[#1a2432] rounded-xl p-6 animate-pulse space-y-4"
                 >
                   <div className="h-8 bg-gray-700 rounded w-3/4"></div>
@@ -165,7 +159,7 @@ const Home = () => {
                   </div>
 
                   {/* Project Content */}
-                  <div 
+                  <div
                     onClick={() => navigate(`/project/${project._id}`)}
                     className="cursor-pointer space-y-4"
                   >
