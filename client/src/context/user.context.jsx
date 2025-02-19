@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import axiosInstance from '../config/axios.js'; // Your Axios instance
+import axiosInstance from '../config/axios.js';
 import { useNavigate } from 'react-router-dom';
 
 // Create UserContext
@@ -25,15 +25,16 @@ export const UserProvider = ({ children }) => {
     // Function to ping the server and check authentication
     const authenticateUser = async () => {
         try {
-            const response = await axiosInstance.get('/user/refresh-token');
+            const response = await axiosInstance.post('/user/refresh-token');
             if (response.data.statusCode === 200 && response.data.success) {
                 setUser(response.data.data); // Update user state
-                return { status: 200 };
+                return { status: 200 }; // FIXED: Return a response object
             }
+            // FIXED: Added explicit return for non-success cases
+            return { status: response.data.statusCode || 403 };
         } catch (error) {
             if (error.response?.status === 401) {
                 setUser(null); // Clear user state
-                navigate('/login'); // Redirect to login
                 return { status: 401 };
             }
             console.error('Error authenticating user:', error);
@@ -43,11 +44,16 @@ export const UserProvider = ({ children }) => {
 
     // Function to ping the server on initial load
     const pingServer = async () => {
-        const response = await authenticateUser();
-        if (response.status === 200) {
-            console.log('Authorized user');
-        } else if (response.status === 401) {
-            console.log('Unauthorized user');
+        try {
+            const response = await authenticateUser();
+            if (response.status === 200) {
+                console.log('Authorized user');
+            } else if (response.status === 401) {
+                console.log('Unauthorized user');
+                navigate('/login');
+            }
+        } catch (err) {
+            console.error('Error pinging server:', err);
             navigate('/login');
         }
     };

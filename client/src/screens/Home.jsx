@@ -18,7 +18,7 @@ const Home = () => {
   const [error, setError] = useState(null);
   const [selectedProject, setSelectedProject] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
-  const { user, authenticateUser } = useContext(UserContext); // Use authenticateUser from context
+  const { user, authenticateUser } = useContext(UserContext);
   const navigate = useNavigate();
 
   // Fetch all projects
@@ -35,24 +35,30 @@ const Home = () => {
     }
   };
 
-  // Ensure the user is authenticated before accessing the homepage
+  // FIXED: Properly handle authentication response
   useEffect(() => {
     const checkAuthAndFetchProjects = async () => {
       try {
-        const authResponse = await authenticateUser(); // Check if the user is authenticated
-        if (authResponse.status === 200) {
-          await fetchProjects(); // Fetch projects if authenticated
-        } else if (authResponse.status === 401) {
-          navigate('/login'); // Redirect to login if not authenticated
+        const authResponse = await authenticateUser();
+        
+        // Added logging to help with debugging
+        console.log("Authentication response:", authResponse);
+        
+        if (authResponse && authResponse.status === 200) {
+          await fetchProjects();
+        } else {
+          // Don't redirect here - let the context handle redirects
+          console.log("Not authenticated or authentication failed");
         }
       } catch (err) {
         console.error('Error checking authentication:', err);
-        navigate('/login'); // Redirect to login on error
+      } finally {
+        setLoading(false);
       }
     };
 
     checkAuthAndFetchProjects();
-  }, [authenticateUser, navigate]);
+  }, [authenticateUser]);
 
   const handleCreateProject = () => {
     navigate('/create-project');

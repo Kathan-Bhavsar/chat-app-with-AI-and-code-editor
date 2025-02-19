@@ -9,7 +9,7 @@ const router = Router();
 router.route('/register').post(registerUser);
 router.route('/login').post(loginUser);
 router.route('/logout').post(verifyJWT,logoutUser);
-router.route('/refresh-Token').post(refreshAccessToken);
+router.route('/refresh-Token').post(verifyJWT,refreshAccessToken);
 router.route('/change-password').post(verifyJWT,changePassword);
 
 export default router;

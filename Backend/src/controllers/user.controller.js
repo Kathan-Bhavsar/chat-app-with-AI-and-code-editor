@@ -125,7 +125,7 @@ const loginUser = asyncHandler(async (req, res) => {
         new ApiResponse(
             200,
             {
-                user: loggedInUser,
+                user: loggedInUser, 
             },
             "User Logged In Successfully!"
         )
@@ -154,7 +154,9 @@ const logoutUser = asyncHandler(async (req, res) => {
 });
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
-    const user = req.user_.id;
+    const user = req.user._id;
+
+    console.log(user);
 
     if (!user) {
         throw new ApiError(401, "User not logged in!");
