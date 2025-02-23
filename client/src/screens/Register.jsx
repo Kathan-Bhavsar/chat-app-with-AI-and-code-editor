@@ -76,7 +76,7 @@ function Register() {
       
       if (data?.user) {
         setUser(data.user);
-        toast.success('Account created successfully');
+        toast.success(response.data.message);
         navigate('/');
       } else {
         toast.error('User not found in API response');

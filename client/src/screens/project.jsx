@@ -5,13 +5,11 @@ import { UserContext } from "../context/user.context.jsx";
 import { initializeSocket, disconnectSocket, recieveMessage, sendMessage } from "../config/socketio.js";
 import { Users, Send, Plus, Crown, X, MessageSquare } from 'lucide-react';
 import { toast } from "react-hot-toast";
-// import { set } from "mongoose";
 
 const Project = () => {
-  // ... (previous state and ref declarations remain the same)
   const navigate = useNavigate();
   const { projectId } = useParams();
-  const { user , setUser } = useContext(UserContext);
+  const { user, setUser } = useContext(UserContext);
   const messagesEndRef = useRef(null);
   const chatContainerRef = useRef(null);
 
@@ -20,19 +18,19 @@ const Project = () => {
     members: [],
     adminId: null,
   });
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState([]); // Ensure messages is always an array
   const [message, setMessage] = useState("");
   const [fileContent, setFileContent] = useState("");
   const [loading, setLoading] = useState(true);
   const [showMembers, setShowMembers] = useState(false);
 
-  // ... (all useEffects and other functions remain exactly the same)
+  // Scroll to the bottom of the chat when messages are updated
   const scrollToBottom = () => {
     if (chatContainerRef.current) {
       const scrollHeight = chatContainerRef.current.scrollHeight;
       chatContainerRef.current.scrollTo({
         top: scrollHeight,
-        behavior: "smooth"
+        behavior: "smooth",
       });
     }
   };
@@ -41,6 +39,7 @@ const Project = () => {
     scrollToBottom();
   }, [messages]);
 
+  // Fetch project data and members
   useEffect(() => {
     const fetchProjectData = async () => {
       try {
@@ -75,41 +74,40 @@ const Project = () => {
     if (projectId) fetchProjectData();
   }, [projectId]);
 
+  const handleIncomingMessage = (data) => {
+    if (!data || !data.content || !data.sender) {
+      console.log("Invalid message received:", data);
+      return;
+    }
+
+    const isUserMessage = data.sender._id === user._id;
+
+    setMessages((prev) => [
+      ...prev,
+      {
+        message: data.content,
+        sender: data.sender,
+        isUser: isUserMessage,
+      },
+    ]);
+  };
+
+  // Initialize Socket.IO and handle real-time messages
   useEffect(() => {
-    if (!projectId) {
-      console.log("⛔ Project ID not found, skipping socket initialization.");
+    if (!projectId || !user || !user?._id) {
+      console.log("Missing required data:", { projectId, userId: user?._id });
       return;
-    }
+  }
 
-    if (!user || !user._id) {
-      console.log("⛔ User not found or missing _id, socket not initialized yet.");
-      return;
-    }
-
-    const handleIncomingMessage = (data) => {
-      if (!data || !data.content || !data.sender) {
-        console.log("Invalid message received:", data);
-        return;
-      }
-
-      const isUserMessage = data.sender._id === user._id;
-
-      setMessages((prev) => [
-        ...prev,
-        {
-          content: data.content,
-          sender: data.sender.username,
-          isUser: isUserMessage,
-        },
-      ]);
-    };
-
+  console.log("🔌 Initializing socket for project:", projectId, "with user ID:", user._id);
     const socket = initializeSocket(projectId);
-    socket.on('forceLogout' , () => {
+
+    socket.on('forceLogout', () => {
       setUser(null);
+      localStorage.removeItem('user');
       navigate('/login');
       toast.error('Session expired. Please login again.');
-    })
+    });
 
     socket.on('connect_error', (error) => {
       if (error.message.includes('401')) {
@@ -117,29 +115,58 @@ const Project = () => {
         navigate('/login');
       }
     });
+
     recieveMessage(projectId, "project-message", handleIncomingMessage);
+
+    const fetchMessages = async () => {
+      console.log("Fetching messages for project:", projectId);
+
+      try {
+        const response = await axiosInstance.get(`/message/get-messages/${projectId}`);
+        console.log(response);
+        // Ensure the response data is an array
+        setMessages(response.data.data);
+      } catch (error) {
+        console.error("Error fetching messages:", error);
+        setMessages([]); // Set to empty array on error
+      }
+    };
+
+    fetchMessages();
 
     return () => {
       console.log("🔌 Disconnecting socket for project:", projectId);
       disconnectSocket(projectId);
     };
-  }, [projectId, user?._id]);
+  }, [projectId, user]);
 
+  // Handle sending a new message
   const send = (event) => {
+    console.log("Sending message:", message);
+
     event.preventDefault();
     if (!message.trim()) return;
 
-    sendMessage(projectId, "project-message", {
+     // Ensure we have a valid user before sending
+  if (!user || !user._id) {
+    console.log("Cannot send message - user not fully loaded");
+    toast.error("Please wait, reconnecting...");
+    return;
+  }
+
+    const messageData = {
       content: message.trim(),
       sender: {
-        _id: user._id,
-        username: user.username,
-      },
-    });
-
-    setMessage("");
+          _id: user._id,
+          username: user.username,
+      }
   };
 
+  sendMessage(projectId, "project-message", messageData);
+  setMessage("");
+  };
+
+  // Toggle members panel visibility
   const handleMemberClick = () => {
     setShowMembers(!showMembers);
   };
@@ -150,9 +177,8 @@ const Project = () => {
       <div className="w-1/4 bg-[#1a2432] flex flex-col border-r border-[#2a3241] relative">
         {/* Members Panel */}
         <div
-          className={`absolute top-0 left-0 w-full h-full background transform transition-transform duration-300 ease-in-out ${
-            showMembers ? "translate-x-0" : "-translate-x-full"
-          } z-20`}
+          className={`absolute top-0 left-0 w-full h-full background transform transition-transform duration-300 ease-in-out ${showMembers ? "translate-x-0" : "-translate-x-full"
+            } z-20`}
         >
           <div className="p-6">
             <div className="flex justify-between items-center mb-6">
@@ -175,7 +201,7 @@ const Project = () => {
                       {member.username}
                     </span>
                     {member._id === projectData.adminId && (
-                      <Crown className="w-4 h-4 ml-2 text-blue-400" />
+                      <Crown className="w-4 h-4 ml-2 text-yellow-400" />
                     )}
                   </div>
                 </div>
@@ -185,7 +211,7 @@ const Project = () => {
         </div>
 
         {/* Project Header */}
-        <div className="bg-[#2a3241] border-b border-[#2a3241] flex justify-between items-center px-6 py-4">
+        <div className="bg-[#0f1218] border-b border-[#2a3241] flex justify-between items-center px-6 py-4">
           <div
             className="flex flex-col cursor-pointer"
             onClick={handleMemberClick}
@@ -207,8 +233,8 @@ const Project = () => {
         </div>
 
         {/* Chat Messages Container */}
-        <div className="flex flex-col flex-1 min-h-0 background">
-          <div 
+        <div className="flex flex-col flex-1 min-h-0 bg-[#1a2432]">
+          <div
             ref={chatContainerRef}
             className="flex-1 overflow-y-auto custom-scrollbar"
             style={{
@@ -218,19 +244,18 @@ const Project = () => {
           >
             <div className="flex flex-col-reverse p-6">
               <div className="space-y-4">
-                {messages.map((msg, index) => (
-                  <div key={index} className={`flex ${msg.isUser ? "justify-end" : "justify-start"}`}>
+                {messages.length > 0 && messages?.map((msg, index) => (
+                  <div key={index} className={`flex ${msg.sender._id === user._id ? "justify-end" : "justify-start"}`}>
                     <div
-                      className={`p-4 max-w-[80%] rounded-xl text-sm ${
-                        msg.isUser
+                      className={`p-4 max-w-[80%] rounded-xl text-sm ${msg.sender._id === user._id
                           ? "bg-blue-500 text-white rounded-br-none"
-                          : "bg-[#253042] text-gray-200 rounded-bl-none"
-                      }`}
+                          : "bg-[#0f1218] text-gray-200 rounded-bl-none"
+                        }`}
                     >
                       <span className="font-semibold block text-xs mb-1 opacity-75">
-                        {msg.isUser ? "You" : msg.sender}
+                        {msg.sender._id === user._id ? "You" : msg.sender.username}
                       </span>
-                      <span>{msg.content}</span>
+                      <span>{msg.message}</span>
                     </div>
                   </div>
                 ))}
@@ -239,7 +264,7 @@ const Project = () => {
           </div>
 
           {/* Message Input */}
-          <form onSubmit={send} className="p-4 bg-[#141c27] border-t border-[#2a3241]">
+          <form onSubmit={send} className="p-4 bg-[#0f1218] border-t border-[#2a3241]">
             <div className="flex items-center space-x-2">
               <input
                 type="text"

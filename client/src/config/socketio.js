@@ -4,6 +4,7 @@ let socketInstanceMap = new Map();
 
 export const initializeSocket = (projectId) => {
     if (socketInstanceMap.has(projectId)) {
+        console.log("Resusing existing socket connection for project:", projectId);
         return socketInstanceMap.get(projectId);
     }
 
@@ -49,6 +50,8 @@ export const recieveMessage = (projectId, eventName, cb) => {
 };
 
 export const sendMessage = (projectId, eventName, data) => {
+    console.log("Data received in sendMessage:", data);
+    
     const socket = socketInstanceMap.get(projectId);
     if (socket) socket.emit(eventName, data);
 };

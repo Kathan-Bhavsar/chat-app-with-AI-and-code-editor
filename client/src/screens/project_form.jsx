@@ -2,6 +2,7 @@ import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "../config/axios.js";
 import { UserContext } from "../context/user.context.jsx";
+import toast from "react-hot-toast";
 
 const ProjectForm = () => {
   const [name, setName] = useState("");
@@ -25,8 +26,8 @@ const ProjectForm = () => {
 
     try {
       await axios.post("/project/create-project", { name, description });
-
       navigate("/"); // Redirect to home after success
+      toast.success("Project created successfully.");
     } catch (err) {
       console.error("Project creation error:", err);
       if (err.response?.status === 404) {

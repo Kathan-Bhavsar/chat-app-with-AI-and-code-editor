@@ -67,9 +67,6 @@ const registerUser = asyncHandler(async (req, res) => {
         maxAge: 604800000,
     };
 
-    delete user._doc.password;
-    delete user._doc.refreshToken;
-
     return res
     .status(200)
     .cookie("accessToken", accessToken, options)
@@ -153,7 +150,7 @@ const logoutUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "User Logged Out Successfully!"));
 });
 
-const refreshAccessToken = asyncHandler(async (req, res) => {
+const Ping = asyncHandler(async (req, res) => {
     const user = req.user._id;
 
     console.log(user);
@@ -206,4 +203,4 @@ const changePassword = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "Password Changed Successfully!"));
 });
 
-export { registerUser , loginUser , logoutUser , refreshAccessToken , changePassword };
+export { registerUser , loginUser , logoutUser , Ping , changePassword };

@@ -1,36 +1,23 @@
 import asyncHandler from 'express-async-handler';
-import Message from '../models/message.model.js';
-import Project from '../models/project.model.js';
+import { ProjectMessages } from '../models/projectmessages.model.js';
 import { ApiError } from '../utils/ApiError.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
 
-const createMessage = asyncHandler(async (req, res, next) => {
-    const { sender, message, project } = req.body;
+const getMessagesByProjectId = asyncHandler(async (req, res) => {
+    const { projectId } = req.params;
 
-    if(!sender || !message || !project) {
-        throw new ApiError(400, 'Please provide all required fields');
+    // Fetch messages from the ProjectMessages model
+    const projectMessages = await ProjectMessages.findOne({ project: projectId })
+        .populate({
+            path: "messages",
+            populate: { path: "sender", select: "username" }, // Populate sender details
+        });
+
+    if (!projectMessages) {
+        throw new ApiError(404, 'No messages found for this project');
     }
 
-    const projectExists = await Project.findById(project);
-
-    if(!projectExists) {
-        throw new ApiError(404, 'Project not found');
-    }
-
-    const newMessage = new Message({
-        sender,
-        message,
-        project
-    });
-
-    const createdMessage = await newMessage.save();
-
-    if(!createdMessage) {
-        throw new ApiError(500, 'Message could not be created');
-    }
-
-    res.status(201).json(new ApiResponse(201, 'Message created', createdMessage));
-
+    res.status(200).json(new ApiResponse(200, projectMessages.messages));
 });
 
-export { createMessage };
+export { getMessagesByProjectId };
