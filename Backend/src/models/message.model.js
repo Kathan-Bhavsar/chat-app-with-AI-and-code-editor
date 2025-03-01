@@ -3,7 +3,7 @@ import { Schema } from "mongoose";
 
 const messageSchema = new Schema({
     sender: {
-        type: Schema.Types.ObjectId,
+        type: Schema.Types.Mixed,
         ref: "User",
         required: true
     },

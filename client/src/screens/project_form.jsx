@@ -11,6 +11,28 @@ const ProjectForm = () => {
   const { user } = useContext(UserContext);
   const navigate = useNavigate();
 
+  // Character limits
+  const MAX_NAME_LENGTH = 20;
+  const MAX_DESCRIPTION_ROWS = 4;
+
+  const handleNameChange = (e) => {
+    // Limit name to 20 characters
+    if (e.target.value.length <= MAX_NAME_LENGTH) {
+      setName(e.target.value);
+    }
+  };
+
+  const handleDescriptionChange = (e) => {
+    // Count lines by splitting on newlines
+    const lines = e.target.value.split('\n');
+    if (lines.length <= MAX_DESCRIPTION_ROWS) {
+      setDescription(e.target.value);
+    } else {
+      // Only allow 4 lines maximum
+      setDescription(lines.slice(0, MAX_DESCRIPTION_ROWS).join('\n'));
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -53,24 +75,30 @@ const ProjectForm = () => {
   
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-white mb-2">Project Name</label>
+            <label className="block text-white mb-2">
+              Project Name <span className="text-gray-400 text-sm">({name.length}/{MAX_NAME_LENGTH})</span>
+            </label>
             <input 
               type="text"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={handleNameChange}
+              maxLength={MAX_NAME_LENGTH}
               className="w-full px-4 py-3 rounded-xl bg-[#253042] text-white border border-[#2a3241] focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50"
               required
             />
           </div>
   
           <div>
-            <label className="block text-white mb-2">Description</label>
+            <label className="block text-white mb-2">
+              Description <span className="text-gray-400 text-sm">(Max 4 lines)</span>
+            </label>
             <textarea
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={handleDescriptionChange}
               className="w-full px-4 py-3 rounded-xl bg-[#253042] text-white border border-[#2a3241] focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50"
               minLength={10}
               rows={4}
+              maxLength={300} // Reasonable character limit for 4 lines
               required
             />
           </div>

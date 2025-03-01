@@ -26,11 +26,13 @@ app.use(
 import userRoutes from './routes/user.routes.js';
 import projectRoutes from './routes/project.routes.js';
 import messageRoutes from './routes/messages.routes.js';
+import AiRoutes from './routes/Ai.routes.js';
 
 //use routes
 app.use("/user", userRoutes);
 app.use("/project", projectRoutes);
 app.use("/message", messageRoutes);
+app.use("/ai", AiRoutes);
 
 export { app };
 

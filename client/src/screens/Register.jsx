@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axiosInstance from '../config/axios.js';
 import { UserContext } from '../context/user.context.jsx';
 import { toast } from 'react-hot-toast';
-import { Lock, User, Mail, Calendar } from 'lucide-react';
+import { Lock, User, Mail, Calendar, Eye, EyeOff } from 'lucide-react';
 
 function Register() {
   const [formData, setFormData] = useState({
@@ -14,6 +14,7 @@ function Register() {
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const { setUser } = useContext(UserContext);
@@ -133,13 +134,20 @@ function Register() {
                 <Lock className="w-5 h-5" />
               </div>
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 id="password"
                 value={formData.password}
                 onChange={handleChange}
-                className={`w-full pl-12 pr-4 py-3 rounded-xl bg-[#253042] text-white border border-[#2a3241] focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 transition-all duration-300 ${errors.password ? 'border-red-500' : ''}`}
+                className={`w-full pl-12 pr-12 py-3 rounded-xl bg-[#253042] text-white border border-[#2a3241] focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 transition-all duration-300 ${errors.password ? 'border-red-500' : ''}`}
                 placeholder="Password"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-400 transition-colors"
+              >
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
               {errors.password && <p className="text-red-500 text-xs mt-1 pl-4">{errors.password}</p>}
             </div>
 
@@ -148,11 +156,18 @@ function Register() {
                 <Calendar className="w-5 h-5" />
               </div>
               <input
-                type="date"
+                type="text"
                 id="dob"
                 value={formData.dob}
+                onFocus={(e) => e.target.type = 'date'}
+                onBlur={(e) => {
+                  if (!e.target.value) {
+                    e.target.type = 'text'
+                  }
+                }}
                 onChange={handleChange}
                 className={`w-full pl-12 pr-4 py-3 rounded-xl bg-[#253042] text-white border border-[#2a3241] focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 transition-all duration-300 ${errors.dob ? 'border-red-500' : ''}`}
+                placeholder="Date of Birth"
               />
               {errors.dob && <p className="text-red-500 text-xs mt-1 pl-4">{errors.dob}</p>}
             </div>

@@ -2,6 +2,7 @@ import { Server } from "socket.io";
 import { socketauth } from "../middleware/socketio.middleware.js";
 import { Message } from "../models/message.model.js";
 import { ProjectMessages } from "../models/projectmessages.model.js";
+import { generateContent } from "../utils/geminiAi.js";
 
 export const initializeSocket = (server) => {
     const io = new Server(server, {
@@ -24,24 +25,25 @@ export const initializeSocket = (server) => {
         socket.on("project-message", async (data) => {
             console.log("Message from user:", socket.user._id);
 
+            const messages = data.content;
+
+            const aiIsPresentInMessage = messages.includes("@ai");
+
             try {
-                // Save the message to the database
                 const newMessage = await Message.create({
                     sender: socket.user._id, // Sender's user ID
-                    message: data.content, // Message content
+                    message: messages, // Message content
                     project: socket.project._id, // Project ID
                 });
 
                 console.log("Message saved to database:", newMessage);
 
-                 // Add the message to the ProjectMessages model
-                 await ProjectMessages.findOneAndUpdate(
-                    { project: socket.project._id },
-                    { $push: { messages: newMessage._id } },
-                    { upsert: true } // Create the document if it doesn't exist
-                );
+                // await ProjectMessages.findOneAndUpdate(
+                //     { project: socket.project._id },
+                //     { $push: { messages: newMessage._id } },
+                //     { upsert: true } // Create the document if it doesn't exist
+                // );
 
-                // Prepare the message data to send to the client
                 const messageData = {
                     content: newMessage.message,
                     sender: {
@@ -51,19 +53,51 @@ export const initializeSocket = (server) => {
                     timestamp: newMessage.createdAt,
                 };
 
-                // Broadcast the message to all clients in the project room
                 io.to(socket.project._id.toString()).emit("project-message", messageData);
+
+                if (aiIsPresentInMessage) {
+                        try {
+                            const prompt = messages.replace("@ai", "").trim();
+                            const aiResponse = await generateContent(prompt);
+    
+                            const aiMessage = await Message.create({
+                                sender: "ai", // AI's sender ID
+                                message: aiResponse, // AI's response
+                                project: socket.project._id, // Project ID
+                            });
+    
+                            console.log("AI response saved to database:", aiMessage);
+    
+                            // await ProjectMessages.findOneAndUpdate(
+                            //     { project: socket.project._id },
+                            //     { $push: { messages: aiMessage._id } },
+                            //     { upsert: true }
+                            // );
+    
+                            const aiMessageData = {
+                                content: aiMessage.message,
+                                sender: {
+                                    _id: "ai",
+                                    username: "AI",
+                                },
+                                timestamp: aiMessage.createdAt,
+                            };
+    
+                            // Broadcast the AI's response to all clients in the project room
+                            io.to(socket.project._id.toString()).emit("project-message", aiMessageData);
+                        } catch (aiError) {
+                            console.error("Error generating AI response:", aiError);
+                        }
+                }
             } catch (error) {
-                console.error("Error saving message to database:", error);
+                console.error("Error handling real-time message:", error);
             }
         });
 
-        // Handle other events (if any)
         socket.on("event", (data) => {
             console.log("Received event data:", data);
         });
 
-        // Handle disconnection
         socket.on("disconnect", () => {
             console.log("A user disconnected", socket.user._id);
         });

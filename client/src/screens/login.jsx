@@ -3,13 +3,16 @@ import { Link, useNavigate } from 'react-router-dom';
 import axiosInstance from '../config/axios.js';
 import { UserContext } from '../context/user.context.jsx';
 import { toast } from 'react-hot-toast';
-import { Lock, User } from 'lucide-react';
+// CHANGE 1: Added Eye and EyeOff icons to the imports
+import { Lock, User, Eye, EyeOff } from 'lucide-react';
 
 function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  // CHANGE 2: Added new state for password visibility
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const { setUser } = useContext(UserContext);
 
@@ -77,13 +80,20 @@ function Login() {
                 <Lock className="w-5 h-5" />
               </div>
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 id="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-12 pr-4 py-4 rounded-xl bg-[#253042] text-white border border-[#2a3241] focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 transition-all duration-300"
+                className="w-full pl-12 pr-12 py-4 rounded-xl bg-[#253042] text-white border border-[#2a3241] focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 transition-all duration-300"
                 placeholder="Password"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-400 transition-colors"
+              >
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
             </div>
 
             <button
