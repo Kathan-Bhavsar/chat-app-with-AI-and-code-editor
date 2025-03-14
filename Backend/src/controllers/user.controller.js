@@ -150,7 +150,7 @@ const logoutUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "User Logged Out Successfully!"));
 });
 
-const Ping = asyncHandler(async (req, res) => {
+const ping = asyncHandler(async (req, res) => {
     const user = req.user._id;
 
     console.log(user);
@@ -203,4 +203,4 @@ const changePassword = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "Password Changed Successfully!"));
 });
 
-export { registerUser , loginUser , logoutUser , Ping , changePassword };
+export { registerUser , loginUser , logoutUser , ping , changePassword };

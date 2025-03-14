@@ -47,6 +47,7 @@ body {
 
 .custom-scrollbar::-webkit-scrollbar {
   width: 3px;
+  height: 3px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
@@ -60,24 +61,4 @@ body {
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #374151;
-}
-
-/* Ultra thin scrollbar for description boxes */
-.ultra-thin-scrollbar {
-  scrollbar-width: thin;
-  -ms-overflow-style: none;
-}
-
-.ultra-thin-scrollbar::-webkit-scrollbar {
-  width: 4px;
-  background: transparent;
-}
-
-.ultra-thin-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 10px;
-}
-
-.ultra-thin-scrollbar::-webkit-scrollbar-track {
-  background: #4a5568 !important;
 }

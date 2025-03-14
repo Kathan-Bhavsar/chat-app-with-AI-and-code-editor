@@ -83,6 +83,7 @@ export const initializeSocket = (server) => {
                                 timestamp: aiMessage.createdAt,
                             };
     
+                            console.log("AI response:", aiMessageData.content);
                             // Broadcast the AI's response to all clients in the project room
                             io.to(socket.project._id.toString()).emit("project-message", aiMessageData);
                         } catch (aiError) {
