@@ -2,7 +2,7 @@ import asyncHandler from "express-async-handler";
 import { Project } from "../models/project.model.js";
 import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
-import { ApiResponse } from "../utils/ApiResponse.js";
+import { ApiResponse } from "../utils/Apiresponse.js";
 
 const createProject = asyncHandler(async (req, res) => {
     const { name, description } = req.body;

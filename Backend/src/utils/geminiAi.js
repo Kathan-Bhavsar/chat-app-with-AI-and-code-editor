@@ -102,11 +102,6 @@ const model = genAI.getGenerativeModel({
 
 export const generateContent = async (prompt) => {
     const result = await model.generateContent(prompt);
-    const responseText = result.response.text();
-
-    try {
-        return JSON.parse(responseText); // Parse if it's a valid JSON
-    } catch (error) {
-        return responseText; // Return as text if not JSON
-    }
+    
+    return result.response.text();
 };

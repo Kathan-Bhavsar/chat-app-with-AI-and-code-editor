@@ -97,9 +97,9 @@ const Project = () => {
     if (!projectId || !user || !user?._id) {
       console.log("Missing required data:", { projectId, userId: user?._id });
       return;
-  }
+    }
 
-  console.log("🔌 Initializing socket for project:", projectId, "with user ID:", user._id);
+    console.log("🔌 Initializing socket for project:", projectId, "with user ID:", user._id);
     const socket = initializeSocket(projectId);
 
     socket.on('forceLogout', () => {
@@ -147,28 +147,57 @@ const Project = () => {
     event.preventDefault();
     if (!message.trim()) return;
 
-     // Ensure we have a valid user before sending
-  if (!user || !user._id) {
-    console.log("Cannot send message - user not fully loaded");
-    toast.error("Please wait, reconnecting...");
-    return;
-  }
+    // Ensure we have a valid user before sending
+    if (!user || !user._id) {
+      console.log("Cannot send message - user not fully loaded");
+      toast.error("Please wait, reconnecting...");
+      return;
+    }
 
     const messageData = {
       content: message.trim(),
       sender: {
-          _id: user._id,
-          username: user.username,
+        _id: user._id,
+        username: user.username,
       }
-  };
+    };
 
-  sendMessage(projectId, "project-message", messageData);
-  setMessage("");
+    sendMessage(projectId, "project-message", messageData);
+    setMessage("");
   };
 
   // Toggle members panel visibility
   const handleMemberClick = () => {
     setShowMembers(!showMembers);
+  };
+
+  const renderMessageContent = (msg) => {
+    try {
+      // Parse the message content
+      const message = JSON.parse(msg);
+  
+      // Check if the message is from AI and contains the "data" field
+      if (message.sender._id === "ai" && message.data) {
+        const data = JSON.parse(message.data); // Parse the "data" field
+        if (data.text) {
+          return (
+            <div className='overflow-auto bg-slate-950 text-white rounded-sm p-2'>
+              {data.text} {/* Display only the text value */}
+            </div>
+          );
+        }
+      }
+  
+      // Fallback for non-AI messages or invalid data
+      return (
+        <div className='overflow-auto bg-slate-950 text-white rounded-sm p-2'>
+          {msg.message} {/* Display the raw message if it's not from AI */}
+        </div>
+      );
+    } catch (error) {
+      console.error("Error parsing message:", error);
+      return <div className="text-red-500">Error displaying message</div>;
+    }
   };
 
   return (
@@ -244,21 +273,32 @@ const Project = () => {
           >
             <div className="flex flex-col-reverse p-6">
               <div className="space-y-4">
-                {messages.length > 0 && messages?.map((msg, index) => (
-                  <div key={index} className={`flex ${msg.sender._id === user._id ? "justify-end" : "justify-start"}`}>
-                    <div
-                      className={`p-4 max-w-[80%] rounded-xl text-sm ${msg.sender._id === user._id
-                          ? "bg-blue-500 text-white rounded-br-none"
-                          : "bg-[#0f1218] text-gray-200 rounded-bl-none"
-                        }`}
-                    >
-                      <span className="font-semibold block text-xs mb-1 opacity-75">
-                        {msg.sender._id === user._id ? "You" : msg.sender.username}
-                      </span>
-                      <span>{msg.message}</span>
+                {messages.length > 0 && messages.map((msg, index) => {
+                  const isUserMessage = msg.sender._id === user._id;
+                  const isAiMessage = msg.sender._id === "ai";
+
+                  return (
+                    <div key={index} className={`flex ${isUserMessage ? "justify-end" : "justify-start"}`}>
+                      <div
+                        className={`p-4 rounded-xl text-sm ${isUserMessage
+                            ? "bg-blue-500 text-white rounded-br-none max-w-[80%]"
+                            : isAiMessage
+                              ? "bg-[#0f1218] text-gray-200 rounded-bl-none w-72"
+                              : "bg-[#0f1218] text-gray-200 rounded-bl-none max-w-[80%]"
+                          }`}
+                        style={{
+                          wordWrap: 'break-word',
+                          overflowWrap: 'break-word'
+                        }}
+                      >
+                        <span className="font-semibold block text-xs mb-1 opacity-75">
+                          {isUserMessage ? "You" : msg.sender.username}
+                        </span>
+                        {renderMessageContent(msg)} {/* Render the message content */}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>

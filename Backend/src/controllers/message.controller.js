@@ -2,7 +2,7 @@ import asyncHandler from 'express-async-handler';
 // import { ProjectMessages } from '../models/projectmessages.model.js';
 import { Message } from '../models/message.model.js';
 import { ApiError } from '../utils/ApiError.js';
-import { ApiResponse } from '../utils/ApiResponse.js';
+import { ApiResponse } from '../utils/Apiresponse.js';
 import mongoose from 'mongoose';
 
 const getMessagesByProjectId = asyncHandler(async (req, res) => {

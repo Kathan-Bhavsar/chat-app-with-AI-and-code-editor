@@ -1,6 +1,6 @@
 import asyncHandler from 'express-async-handler';
 import { ApiError } from '../utils/ApiError.js';
-import { ApiResponse } from '../utils/ApiResponse.js';
+import { ApiResponse } from '../utils/Apiresponse.js';
 import { generateContent } from '../utils/geminiAi.js';
 
 const generateMessage = asyncHandler(async (req, res) => {
