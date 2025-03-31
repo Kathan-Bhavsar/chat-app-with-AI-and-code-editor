@@ -18,11 +18,56 @@ const Project = () => {
     members: [],
     adminId: null,
   });
-  const [messages, setMessages] = useState([]); // Ensure messages is always an array
+  const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState("");
-  const [fileContent, setFileContent] = useState("");
+  const [filetree, setFiletree] = useState({
+    "app.js": {
+      content: `import express from "express";
+import bodyParser from "body-parser";
+
+const app = express();
+const port = 3000;
+
+// Middleware
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(express.static("public"));
+
+// Routes
+app.get("/", (req, res) => {
+    res.send("Hello, Express!");
+});
+
+// Start Server
+app.listen(port, () => {
+    console.log(\`Server is running on port \${port}\`);
+});`,
+      language: "javascript"
+    },
+    "package.json": {
+      content: `{
+  "name": "my-app",
+  "version": "1.0.0", 
+  "description": "A simple Express app",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "body-parser": "^1.19.0"
+  }
+}`,
+      language: "json"
+    }
+  });
+
+  const [openFiles, setOpenFiles] = useState([]); // Start with app.js open by default
+  const [activeFile, setActiveFile] = useState(); // Set app.js as active by default
   const [loading, setLoading] = useState(true);
   const [showMembers, setShowMembers] = useState(false);
+  const [aiError, setAiError] = useState(null);
+
 
   // Scroll to the bottom of the chat when messages are updated
   const scrollToBottom = () => {
@@ -82,12 +127,15 @@ const Project = () => {
 
     const isUserMessage = data.sender._id === user._id;
 
+    console.log("Incoming message:", data.content);
+
     setMessages((prev) => [
       ...prev,
       {
-        message: data.content,
+        content: data.content,
         sender: data.sender,
         isUser: isUserMessage,
+        timestamp: data.timestamp || new Date().toISOString()
       },
     ]);
   };
@@ -116,6 +164,11 @@ const Project = () => {
       }
     });
 
+    socket.on('ai-error', (error) => {
+      setAiError(error.message);
+      setTimeout(() => setAiError(null), 5000);
+    });
+
     recieveMessage(projectId, "project-message", handleIncomingMessage);
 
     const fetchMessages = async () => {
@@ -123,12 +176,16 @@ const Project = () => {
 
       try {
         const response = await axiosInstance.get(`/message/get-messages/${projectId}`);
-        console.log(response);
-        // Ensure the response data is an array
-        setMessages(response.data.data);
+        const formattedMessages = response.data.data.map(msg => ({
+          content: msg.message,
+          sender: msg.sender,
+          timestamp: msg.createdAt,
+          isUser: msg.sender._id === user._id
+        }));
+        setMessages(formattedMessages);
       } catch (error) {
         console.error("Error fetching messages:", error);
-        setMessages([]); // Set to empty array on error
+        setMessages([]);
       }
     };
 
@@ -142,12 +199,9 @@ const Project = () => {
 
   // Handle sending a new message
   const send = (event) => {
-    console.log("Sending message:", message);
-
     event.preventDefault();
     if (!message.trim()) return;
 
-    // Ensure we have a valid user before sending
     if (!user || !user._id) {
       console.log("Cannot send message - user not fully loaded");
       toast.error("Please wait, reconnecting...");
@@ -171,33 +225,53 @@ const Project = () => {
     setShowMembers(!showMembers);
   };
 
-  const renderMessageContent = (msg) => {
-    try {
-      // Parse the message content
-      const message = JSON.parse(msg);
-  
-      // Check if the message is from AI and contains the "data" field
-      if (message.sender._id === "ai" && message.data) {
-        const data = JSON.parse(message.data); // Parse the "data" field
-        if (data.text) {
+  // Open a file in a new tab
+  const openFile = (file) => {
+    if (!openFiles.includes(file)) {
+      setOpenFiles([...openFiles, file]);
+    }
+    setActiveFile(file);
+  };
+
+  // Close a file tab
+  const closeFile = (file) => {
+    const updatedFiles = openFiles.filter((f) => f !== file);
+    setOpenFiles(updatedFiles);
+
+    if (activeFile === file) {
+      setActiveFile(updatedFiles.length > 0 ? updatedFiles[0] : null);
+    }
+  };
+
+  const renderMessageContent = (content) => {
+    if (content.sender._id === "ai") {
+      try {
+        if (content.content.text) {
           return (
             <div className='overflow-auto bg-slate-950 text-white rounded-sm p-2'>
-              {data.text} {/* Display only the text value */}
+              {content.content.text}
             </div>
           );
         }
+        return (
+          <div className='overflow-auto bg-slate-950 text-white rounded-sm p-2'>
+            {content.content}
+          </div>
+        );
+      } catch (error) {
+        return (
+          <div className="text-red-500">
+            Error displaying AI message
+          </div>
+        );
       }
-  
-      // Fallback for non-AI messages or invalid data
-      return (
-        <div className='overflow-auto bg-slate-950 text-white rounded-sm p-2'>
-          {msg.message} {/* Display the raw message if it's not from AI */}
-        </div>
-      );
-    } catch (error) {
-      console.error("Error parsing message:", error);
-      return <div className="text-red-500">Error displaying message</div>;
     }
+    
+    return (
+      <div className='overflow-auto bg-slate-950 text-white rounded-sm p-2'>
+        {content.content}
+      </div>
+    );
   };
 
   return (
@@ -263,6 +337,11 @@ const Project = () => {
 
         {/* Chat Messages Container */}
         <div className="flex flex-col flex-1 min-h-0 bg-[#1a2432]">
+          {aiError && (
+            <div className="bg-red-500/10 text-red-400 p-2 text-center text-sm">
+              {aiError}
+            </div>
+          )}
           <div
             ref={chatContainerRef}
             className="flex-1 overflow-y-auto custom-scrollbar"
@@ -273,32 +352,41 @@ const Project = () => {
           >
             <div className="flex flex-col-reverse p-6">
               <div className="space-y-4">
-                {messages.length > 0 && messages.map((msg, index) => {
-                  const isUserMessage = msg.sender._id === user._id;
-                  const isAiMessage = msg.sender._id === "ai";
+                {messages.length > 0 ? (
+                  messages.map((msg, index) => {
+                    const isUserMessage = msg.sender._id === user._id;
+                    const isAiMessage = msg.sender._id === "ai";
 
-                  return (
-                    <div key={index} className={`flex ${isUserMessage ? "justify-end" : "justify-start"}`}>
-                      <div
-                        className={`p-4 rounded-xl text-sm ${isUserMessage
-                            ? "bg-blue-500 text-white rounded-br-none max-w-[80%]"
-                            : isAiMessage
-                              ? "bg-[#0f1218] text-gray-200 rounded-bl-none w-72"
-                              : "bg-[#0f1218] text-gray-200 rounded-bl-none max-w-[80%]"
-                          }`}
-                        style={{
-                          wordWrap: 'break-word',
-                          overflowWrap: 'break-word'
-                        }}
-                      >
-                        <span className="font-semibold block text-xs mb-1 opacity-75">
-                          {isUserMessage ? "You" : msg.sender.username}
-                        </span>
-                        {renderMessageContent(msg)} {/* Render the message content */}
+                    return (
+                      <div key={index} className={`flex ${isUserMessage ? "justify-end" : "justify-start"}`}>
+                        <div
+                          className={`p-4 rounded-xl text-sm ${isUserMessage
+                              ? "bg-blue-500 text-white rounded-br-none max-w-[80%]"
+                              : isAiMessage
+                                ? "bg-[#0f1218] text-gray-200 rounded-bl-none w-72"
+                                : "bg-[#0f1218] text-gray-200 rounded-bl-none max-w-[80%]"
+                            }`}
+                          style={{
+                            wordWrap: 'break-word',
+                            overflowWrap: 'break-word'
+                          }}
+                        >
+                          <span className="font-semibold block text-xs mb-1 opacity-75">
+                            {isUserMessage ? "You" : msg.sender.username}
+                          </span>
+                          {renderMessageContent(msg)}
+                          <div className="text-xs text-gray-400 mt-1">
+                            {new Date(msg.timestamp).toLocaleTimeString()}
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })
+                ) : (
+                  <div className="text-center text-gray-500 py-4">
+                    No messages yet. Start the conversation!
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -324,23 +412,68 @@ const Project = () => {
         </div>
       </div>
 
-      {/* Middle Section */}
+      {/* Middle Section - File Tree */}
       <div className="w-1/6 bg-[#1a2432] p-6 border-r border-[#2a3241] overflow-y-auto custom-scrollbar">
-        <div className="flex items-center space-x-2 mb-6">
+        <div className="flex items-center space-x-2 mb-10">
           <MessageSquare className="w-5 h-5 text-blue-400" />
           <h2 className="text-xl font-bold text-white">Project Files</h2>
         </div>
-        <div className="h-full"></div>
+
+        <div className="h-full">
+          {Object.keys(filetree).map((file, index) => (
+            <div key={index} className="space-y-2 p-1 text-white cursor-pointer">
+              <button
+                onClick={() => openFile(file)}
+                className={`flex items-center space-x-2 p-2 rounded-lg w-full hover:bg-slate-700 ${activeFile === file ? 'bg-[#2a3b4c]' : ''}`}
+              >
+                📄 <span>{file}</span>
+              </button>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Code Editor Section */}
       <div className="flex-1 bg-[#0f1218] flex flex-col overflow-hidden">
+        {/* File Tabs */}
+        <div className="flex items-center p-2 bg-[#1a2432] border-b border-[#2a3241]">
+          {openFiles.map((file) => (
+            <div
+              key={file}
+              className={`flex items-center px-4 py-2 mr-2 text-sm rounded-t-lg cursor-pointer ${activeFile === file ? "bg-[#0f1218] text-white" : "bg-[#2a3241] text-gray-400"}`}
+              onClick={() => setActiveFile(file)}
+            >
+              <span>{file}</span>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  closeFile(file);
+                }}
+                className="ml-2 text-gray-400 hover:text-white"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          ))}
+        </div>
+
+        {/* Code Editor */}
         <div className="flex-1 p-6">
           <textarea
-            value={fileContent}
-            onChange={(e) => setFileContent(e.target.value)}
+            value={activeFile ? filetree[activeFile]?.content : ""}
+            onChange={(e) => {
+              if (activeFile) {
+                setFiletree((prev) => ({
+                  ...prev,
+                  [activeFile]: {
+                    ...prev[activeFile],
+                    content: e.target.value
+                  },
+                }));
+              }
+            }}
             className="w-full h-full bg-[#1a2432] text-gray-100 p-6 rounded-xl border border-[#2a3241] font-mono text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/50 resize-none placeholder-gray-500"
-            placeholder="Write your code here..."
+            placeholder={activeFile ? `Edit ${activeFile}` : "Select a file to edit"}
             spellCheck="false"
           />
         </div>

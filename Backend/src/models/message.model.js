@@ -8,7 +8,7 @@ const messageSchema = new Schema({
         required: true
     },
     message: {
-        type: String,
+        type: Schema.Types.Mixed,
         required: true
     },
     project: {

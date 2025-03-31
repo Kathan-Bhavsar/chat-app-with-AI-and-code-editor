@@ -1,7 +1,7 @@
 import { Server } from "socket.io";
 import { socketauth } from "../middleware/socketio.middleware.js";
 import { Message } from "../models/message.model.js";
-import { ProjectMessages } from "../models/projectmessages.model.js";
+import { generateMessage } from "../controllers/Ai.controller.js";
 import { generateContent } from "../utils/geminiAi.js";
 
 export const initializeSocket = (server) => {
@@ -84,6 +84,8 @@ export const initializeSocket = (server) => {
                             };
     
                             console.log("AI response:", aiMessageData.content);
+                            console.log("type of AI response:", typeof aiMessageData.content);
+                            
                             // Broadcast the AI's response to all clients in the project room
                             io.to(socket.project._id.toString()).emit("project-message", aiMessageData);
                         } catch (aiError) {

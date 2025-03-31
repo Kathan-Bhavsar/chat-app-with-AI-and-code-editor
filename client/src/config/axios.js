@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const axiosInstance = axios.create({
-  baseURL: "https://chat-app-with-ai-and-code-editor.onrender.com",
+  baseURL: "http://localhost:8000",
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",

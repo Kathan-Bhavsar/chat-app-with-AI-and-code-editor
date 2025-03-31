@@ -44,6 +44,7 @@ export const socketauth = asyncHandler(async (socket, next) => {
             }
         }
 
+        console.log('Socket token:', token); // Debug line
         if (!token) {
             console.error('No token found in:', {
                 cookies: socket.handshake.headers.cookie,
