@@ -5,6 +5,8 @@ import { UserContext } from "../context/user.context.jsx";
 import { initializeSocket, disconnectSocket, recieveMessage, sendMessage } from "../config/socketio.js";
 import { Users, Send, Plus, Crown, X, MessageSquare } from 'lucide-react';
 import { toast } from "react-hot-toast";
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { tomorrow } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 const Project = () => {
   const navigate = useNavigate();
@@ -20,56 +22,13 @@ const Project = () => {
   });
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState("");
-  const [filetree, setFiletree] = useState({
-    "app.js": {
-      content: `import express from "express";
-import bodyParser from "body-parser";
-
-const app = express();
-const port = 3000;
-
-// Middleware
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.json());
-app.use(express.static("public"));
-
-// Routes
-app.get("/", (req, res) => {
-    res.send("Hello, Express!");
-});
-
-// Start Server
-app.listen(port, () => {
-    console.log(\`Server is running on port \${port}\`);
-});`,
-      language: "javascript"
-    },
-    "package.json": {
-      content: `{
-  "name": "my-app",
-  "version": "1.0.0", 
-  "description": "A simple Express app",
-  "main": "app.js",
-  "scripts": {
-    "start": "node app.js"
-  },
-  "dependencies": {
-    "express": "^4.17.1",
-    "body-parser": "^1.19.0"
-  }
-}`,
-      language: "json"
-    }
-  });
-
-  const [openFiles, setOpenFiles] = useState([]); // Start with app.js open by default
-  const [activeFile, setActiveFile] = useState(); // Set app.js as active by default
+  const [filetree, setFiletree] = useState({});
+  const [openFiles, setOpenFiles] = useState([]);
+  const [activeFile, setActiveFile] = useState();
   const [loading, setLoading] = useState(true);
   const [showMembers, setShowMembers] = useState(false);
   const [aiError, setAiError] = useState(null);
 
-
-  // Scroll to the bottom of the chat when messages are updated
   const scrollToBottom = () => {
     if (chatContainerRef.current) {
       const scrollHeight = chatContainerRef.current.scrollHeight;
@@ -84,7 +43,6 @@ app.listen(port, () => {
     scrollToBottom();
   }, [messages]);
 
-  // Fetch project data and members
   useEffect(() => {
     const fetchProjectData = async () => {
       try {
@@ -127,7 +85,42 @@ app.listen(port, () => {
 
     const isUserMessage = data.sender._id === user._id;
 
-    console.log("Incoming message:", data.content);
+    let content;
+    try {
+      content = typeof data.content === 'string' ? JSON.parse(data.content) : data.content;
+    } catch (e) {
+      content = data.content;
+    }
+
+    if (content.fileTree) {
+      const formattedFiles = {};
+      for (const [filename, fileData] of Object.entries(content.fileTree)) {
+        if (fileData.file && fileData.file.contents) {
+          const unescapedContent = fileData.file.contents
+            .replace(/\\n/g, '\n')
+            .replace(/\\"/g, '"')
+            .replace(/\\t/g, '\t');
+
+          formattedFiles[filename] = {
+            content: unescapedContent,
+            language: filename.endsWith('.json') ? 'json' : 
+                     filename.endsWith('.js') ? 'javascript' : 
+                     'text'
+          };
+        }
+      }
+
+      setFiletree(prev => ({
+        ...prev,
+        ...formattedFiles
+      }));
+
+      const firstFile = Object.keys(formattedFiles)[0];
+      if (firstFile && !openFiles.includes(firstFile)) {
+        setOpenFiles([...openFiles, firstFile]);
+        setActiveFile(firstFile);
+      }
+    }
 
     setMessages((prev) => [
       ...prev,
@@ -140,7 +133,6 @@ app.listen(port, () => {
     ]);
   };
 
-  // Initialize Socket.IO and handle real-time messages
   useEffect(() => {
     if (!projectId || !user || !user?._id) {
       console.log("Missing required data:", { projectId, userId: user?._id });
@@ -197,7 +189,6 @@ app.listen(port, () => {
     };
   }, [projectId, user]);
 
-  // Handle sending a new message
   const send = (event) => {
     event.preventDefault();
     if (!message.trim()) return;
@@ -220,12 +211,10 @@ app.listen(port, () => {
     setMessage("");
   };
 
-  // Toggle members panel visibility
   const handleMemberClick = () => {
     setShowMembers(!showMembers);
   };
 
-  // Open a file in a new tab
   const openFile = (file) => {
     if (!openFiles.includes(file)) {
       setOpenFiles([...openFiles, file]);
@@ -233,7 +222,6 @@ app.listen(port, () => {
     setActiveFile(file);
   };
 
-  // Close a file tab
   const closeFile = (file) => {
     const updatedFiles = openFiles.filter((f) => f !== file);
     setOpenFiles(updatedFiles);
@@ -458,29 +446,31 @@ app.listen(port, () => {
         </div>
 
         {/* Code Editor */}
-        <div className="flex-1 p-6">
-          <textarea
-            value={activeFile ? filetree[activeFile]?.content : ""}
-            onChange={(e) => {
-              if (activeFile) {
-                setFiletree((prev) => ({
-                  ...prev,
-                  [activeFile]: {
-                    ...prev[activeFile],
-                    content: e.target.value
-                  },
-                }));
-              }
-            }}
-            className="w-full h-full bg-[#1a2432] text-gray-100 p-6 rounded-xl border border-[#2a3241] font-mono text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/50 resize-none placeholder-gray-500"
-            placeholder={activeFile ? `Edit ${activeFile}` : "Select a file to edit"}
-            spellCheck="false"
-          />
-        </div>
-        <div className="p-4 bg-[#1a2432] border-t border-[#2a3241]">
-          <button className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl transition-colors text-sm font-medium">
-            Save Changes
-          </button>
+        <div className="flex-1 overflow-auto">
+          {activeFile && filetree[activeFile] ? (
+            <div className="h-full">
+              <SyntaxHighlighter
+                language={filetree[activeFile].language || 'javascript'}
+                style={tomorrow}
+                customStyle={{
+                  margin: 0,
+                  padding: '1.5rem',
+                  height: '100%',
+                  background: '#1a2432',
+                  fontSize: '0.875rem',
+                  borderRadius: 0
+                }}
+                lineNumberStyle={{ color: '#6e7681' }}
+                showLineNumbers
+              >
+                {filetree[activeFile].content}
+              </SyntaxHighlighter>
+            </div>
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-gray-500">
+              Select a file to edit
+            </div>
+          )}
         </div>
       </div>
     </div>

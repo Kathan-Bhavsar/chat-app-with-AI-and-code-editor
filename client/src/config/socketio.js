@@ -8,7 +8,7 @@ export const initializeSocket = (projectId) => {
         return socketInstanceMap.get(projectId);
     }
 
-    const newSocket = io('http://localhost:8000', {
+    const newSocket = io('https://chat-app-with-ai-and-code-editor.onrender.com', {
         transports: ["websocket"],
         withCredentials: true,
         autoConnect: true,
