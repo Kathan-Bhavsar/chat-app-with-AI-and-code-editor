@@ -3,7 +3,7 @@ import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/Apiresponse.js";
 import jwt from "jsonwebtoken";
-import redisClient from "../utils/redisClient.js";
+// import redisClient from "../utils/redisClient.js";
 
 const generateAccessandRefreshToken = async(userId) => {
     try {

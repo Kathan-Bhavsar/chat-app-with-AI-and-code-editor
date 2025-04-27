@@ -103,9 +103,9 @@ const Project = () => {
 
           formattedFiles[filename] = {
             content: unescapedContent,
-            language: filename.endsWith('.json') ? 'json' : 
-                     filename.endsWith('.js') ? 'javascript' : 
-                     'text'
+            language: filename.endsWith('.json') ? 'json' :
+              filename.endsWith('.js') ? 'javascript' :
+                'text'
           };
         }
       }
@@ -254,7 +254,7 @@ const Project = () => {
         );
       }
     }
-    
+
     return (
       <div className='overflow-auto bg-slate-950 text-white rounded-sm p-2'>
         {content.content}
@@ -349,10 +349,10 @@ const Project = () => {
                       <div key={index} className={`flex ${isUserMessage ? "justify-end" : "justify-start"}`}>
                         <div
                           className={`p-4 rounded-xl text-sm ${isUserMessage
-                              ? "bg-blue-500 text-white rounded-br-none max-w-[80%]"
-                              : isAiMessage
-                                ? "bg-[#0f1218] text-gray-200 rounded-bl-none w-72"
-                                : "bg-[#0f1218] text-gray-200 rounded-bl-none max-w-[80%]"
+                            ? "bg-blue-500 text-white rounded-br-none max-w-[80%]"
+                            : isAiMessage
+                              ? "bg-[#0f1218] text-gray-200 rounded-bl-none w-72"
+                              : "bg-[#0f1218] text-gray-200 rounded-bl-none max-w-[80%]"
                             }`}
                           style={{
                             wordWrap: 'break-word',
@@ -414,7 +414,9 @@ const Project = () => {
                 onClick={() => openFile(file)}
                 className={`flex items-center space-x-2 p-2 rounded-lg w-full hover:bg-slate-700 ${activeFile === file ? 'bg-[#2a3b4c]' : ''}`}
               >
-                📄 <span>{file}</span>
+                <span className="truncate max-w-[180px]" title={file}>
+                  📄 {file}
+                </span>
               </button>
             </div>
           ))}
