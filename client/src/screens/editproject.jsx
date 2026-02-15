@@ -34,51 +34,76 @@ const EditProjectModal = ({ project, onClose, onUpdate }) => {
   };    
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-      <div className="bg-[#1a2432] border border-[#2a3241] rounded-3xl shadow-2xl w-full max-w-md p-8">
-        <h2 className="text-3xl font-bold text-white mb-6 text-center">Edit Project</h2>
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 animate-fade-in">
+        
+        {/* Header */}
+        <div className="mb-8">
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">
+            Edit Project
+          </h2>
+          <p className="text-gray-600">
+            Update your project details
+          </p>
+        </div>
         
         {error && (
-          <div className="bg-red-500/10 border border-red-500/30 text-red-400 p-3 rounded-lg mb-6 text-center">
+          <div className="bg-red-50 border-2 border-red-200 text-red-600 p-4 rounded-xl mb-6">
             {error}
           </div>
         )}
         
         <form onSubmit={handleSubmit} className="space-y-6">
+          
+          {/* Project Name */}
           <div>
-            <label className="block text-white mb-2">Project Name</label>
+            <label htmlFor="edit-name" className="block text-sm font-semibold text-gray-700 mb-2">
+              Project Name
+            </label>
             <input
               type="text"
+              id="edit-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl bg-[#253042] text-white border border-[#2a3241] focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50"
+              className="w-full px-4 py-3.5 rounded-xl border-2 border-gray-200 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200 bg-white transition-all text-gray-900"
+              placeholder="Enter project name"
               required
             />
           </div>
           
+          {/* Description */}
           <div>
-            <label className="block text-white mb-2">Description</label>
+            <label htmlFor="edit-description" className="block text-sm font-semibold text-gray-700 mb-2">
+              Description
+            </label>
             <textarea
+              id="edit-description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl bg-[#253042] text-white border border-[#2a3241] focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50"
+              className="w-full px-4 py-3.5 rounded-xl border-2 border-gray-200 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200 bg-white transition-all resize-none text-gray-900"
               rows={4}
+              placeholder="Enter project description"
               required
             />
           </div>
           
-          <div className="flex justify-between gap-4">
+          {/* Buttons */}
+          <div className="flex gap-4 pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="w-full text-gray-400 hover:text-white bg-[#253042] py-3 rounded-xl transition-colors"
+              className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-3.5 rounded-xl transition-colors font-semibold"
               disabled={loading}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 rounded-xl hover:from-blue-600 hover:to-blue-700 transition duration-300"
+              className={`flex-1 py-3.5 rounded-xl transition-all duration-300 font-semibold ${
+                loading 
+                  ? "bg-gray-400 cursor-not-allowed text-white" 
+                  : "bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-lg shadow-purple-500/30"
+              }`}
               disabled={loading}
             >
               {loading ? "Saving..." : "Save Changes"}

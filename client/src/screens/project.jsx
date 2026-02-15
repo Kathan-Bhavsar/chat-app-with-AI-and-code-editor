@@ -263,36 +263,39 @@ const Project = () => {
   };
 
   return (
-    <div className="h-screen overflow-hidden bg-[#0f1218] text-white flex">
+    <div className="h-screen overflow-hidden bg-gradient-to-br from-slate-100 via-gray-50 to-slate-100 text-gray-900 flex">
       {/* Left Chat Section */}
-      <div className="w-1/4 bg-[#1a2432] flex flex-col border-r border-[#2a3241] relative">
+      <div className="w-1/4 bg-white flex flex-col border-r border-gray-200 relative shadow-lg">
         {/* Members Panel */}
         <div
-          className={`absolute top-0 left-0 w-full h-full background transform transition-transform duration-300 ease-in-out ${showMembers ? "translate-x-0" : "-translate-x-full"
-            } z-20`}
+          className={`absolute top-0 left-0 w-full h-full bg-white transform transition-transform duration-300 ease-in-out ${showMembers ? "translate-x-0" : "-translate-x-full"
+            } z-20 shadow-2xl`}
         >
           <div className="p-6">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-semibold text-white">Collaborators</h2>
+            <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
+              <h2 className="text-xl font-bold text-gray-900">Collaborators</h2>
               <button
                 onClick={() => setShowMembers(false)}
-                className="text-gray-400 hover:text-white transition-colors"
+                className="text-gray-400 hover:text-gray-600 transition-colors p-2 hover:bg-gray-100 rounded-lg"
               >
-                <X className="w-6 h-6" />
+                <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="-space-y-0.5">
+            <div className="space-y-2">
               {projectData.members.map((member, index) => (
-                <div key={index} className="flex items-center space-x-3 p-3 rounded-lg hover:bg-[#253042] group transition-colors">
-                  <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-400">
-                    <Users className="w-6 h-6" />
+                <div
+                  key={index}
+                  className="flex items-center space-x-3 p-3 rounded-xl hover:bg-gradient-to-r hover:from-purple-50 hover:to-blue-50 group transition-all duration-200 border border-transparent hover:border-purple-200"
+                >
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center shadow-md">
+                    <Users className="w-5 h-5 text-white" />
                   </div>
                   <div className="flex items-center flex-1">
-                    <span className="text-gray-300 group-hover:text-white transition-colors">
+                    <span className="text-gray-700 group-hover:text-gray-900 transition-colors font-medium">
                       {member.username}
                     </span>
                     {member._id === projectData.adminId && (
-                      <Crown className="w-4 h-4 ml-2 text-yellow-400" />
+                      <Crown className="w-4 h-4 ml-2 text-yellow-500" />
                     )}
                   </div>
                 </div>
@@ -302,31 +305,31 @@ const Project = () => {
         </div>
 
         {/* Project Header */}
-        <div className="bg-[#0f1218] border-b border-[#2a3241] flex justify-between items-center px-6 py-4">
+        <div className="bg-gradient-to-r from-purple-600 to-blue-600 flex justify-between items-center px-6 py-5 shadow-lg">
           <div
-            className="flex flex-col cursor-pointer"
+            className="flex flex-col cursor-pointer hover:opacity-90 transition-opacity"
             onClick={handleMemberClick}
           >
             <h2 className="text-lg font-bold text-white truncate">
               {loading ? "Loading..." : projectData.name}
             </h2>
-            <div className="flex items-center text-gray-400 text-sm mt-1">
-              <span>{projectData.members.length}</span>
+            <div className="flex items-center text-blue-100 text-sm mt-1.5">
+              <span className="font-medium">{projectData.members.length}</span>
               <Users className="w-4 h-4 ml-2" />
             </div>
           </div>
           <button
             onClick={() => navigate(`/project/${projectId}/add-member`)}
-            className="p-2 hover:bg-[#2a3241] rounded-lg transition-colors"
+            className="p-2.5 hover:bg-white/20 rounded-xl transition-all duration-200 backdrop-blur-sm group"
           >
-            <Plus className="w-5 h-5 text-blue-400" />
+            <Plus className="w-5 h-5 text-white group-hover:scale-110 transition-transform" />
           </button>
         </div>
 
         {/* Chat Messages Container */}
-        <div className="flex flex-col flex-1 min-h-0 bg-[#1a2432]">
+        <div className="flex flex-col flex-1 min-h-0 bg-gray-50">
           {aiError && (
-            <div className="bg-red-500/10 text-red-400 p-2 text-center text-sm">
+            <div className="bg-red-50 border border-red-200 text-red-600 p-3 text-center text-sm font-medium mx-4 mt-4 rounded-xl">
               {aiError}
             </div>
           )}
@@ -334,8 +337,8 @@ const Project = () => {
             ref={chatContainerRef}
             className="flex-1 overflow-y-auto custom-scrollbar"
             style={{
-              '--scrollbar-thumb': '#4B5563',
-              '--scrollbar-track': 'transparent'
+              "--scrollbar-thumb": "#9CA3AF",
+              "--scrollbar-track": "transparent",
             }}
           >
             <div className="flex flex-col-reverse p-6">
@@ -346,24 +349,43 @@ const Project = () => {
                     const isAiMessage = msg.sender._id === "ai";
 
                     return (
-                      <div key={index} className={`flex ${isUserMessage ? "justify-end" : "justify-start"}`}>
+                      <div
+                        key={index}
+                        className={`flex ${isUserMessage ? "justify-end" : "justify-start"
+                          }`}
+                      >
                         <div
-                          className={`p-4 rounded-xl text-sm ${isUserMessage
-                            ? "bg-blue-500 text-white rounded-br-none max-w-[80%]"
-                            : isAiMessage
-                              ? "bg-[#0f1218] text-gray-200 rounded-bl-none w-72"
-                              : "bg-[#0f1218] text-gray-200 rounded-bl-none max-w-[80%]"
+                          className={`rounded-xl shadow-md ${isUserMessage
+                              ? "bg-gradient-to-r from-purple-600 to-blue-600 rounded-br-none max-w-[80%]"
+                              : isAiMessage
+                                ? "bg-white rounded-bl-none w-72 border border-gray-200"
+                                : "bg-white rounded-bl-none max-w-[80%] border border-gray-200"
                             }`}
-                          style={{
-                            wordWrap: 'break-word',
-                            overflowWrap: 'break-word'
-                          }}
                         >
-                          <span className="font-semibold block text-xs mb-1 opacity-75">
-                            {isUserMessage ? "You" : msg.sender.username}
-                          </span>
-                          {renderMessageContent(msg)}
-                          <div className="text-xs text-gray-400 mt-1">
+                          <div className="px-4 pt-3 pb-2">
+                            <span
+                              className={`font-semibold block text-xs mb-2 ${isUserMessage
+                                  ? "text-blue-100"
+                                  : "text-purple-600"
+                                }`}
+                            >
+                              {isUserMessage ? "You" : msg.sender.username}
+                            </span>
+                            <div
+                              className={`text-sm leading-relaxed ${isUserMessage ? "text-white" : "text-gray-800"
+                                }`}
+                              style={{
+                                wordWrap: "break-word",
+                                overflowWrap: "break-word",
+                              }}
+                            >
+                              {renderMessageContent(msg)}
+                            </div>
+                          </div>
+                          <div
+                            className={`px-4 pb-3 pt-1 text-xs ${isUserMessage ? "text-blue-100" : "text-gray-400"
+                              }`}
+                          >
                             {new Date(msg.timestamp).toLocaleTimeString()}
                           </div>
                         </div>
@@ -371,8 +393,13 @@ const Project = () => {
                     );
                   })
                 ) : (
-                  <div className="text-center text-gray-500 py-4">
-                    No messages yet. Start the conversation!
+                  <div className="text-center py-12">
+                    <div className="bg-gradient-to-br from-purple-100 to-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                      <MessageSquare className="w-8 h-8 text-purple-600" />
+                    </div>
+                    <p className="text-gray-500 font-medium">
+                      No messages yet. Start the conversation!
+                    </p>
                   </div>
                 )}
               </div>
@@ -380,18 +407,21 @@ const Project = () => {
           </div>
 
           {/* Message Input */}
-          <form onSubmit={send} className="p-4 bg-[#0f1218] border-t border-[#2a3241]">
-            <div className="flex items-center space-x-2">
+          <form
+            onSubmit={send}
+            className="p-4 bg-white border-t border-gray-200 shadow-lg"
+          >
+            <div className="flex items-center space-x-3">
               <input
                 type="text"
                 placeholder="Type a message..."
-                className="flex-1 bg-[#1a2432] text-white px-4 py-3 rounded-xl border border-[#2a3241] focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/50 placeholder-gray-500 text-sm"
+                className="flex-1 bg-gray-50 text-gray-900 px-4 py-3.5 rounded-xl border border-gray-200 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200 placeholder-gray-400 text-sm font-medium transition-all"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
               />
               <button
                 type="submit"
-                className="p-3 rounded-xl bg-blue-500 hover:bg-blue-600 transition-colors"
+                className="p-3.5 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 transition-all duration-200 shadow-lg shadow-purple-500/30"
               >
                 <Send className="w-5 h-5 text-white" />
               </button>
@@ -401,21 +431,27 @@ const Project = () => {
       </div>
 
       {/* Middle Section - File Tree */}
-      <div className="w-1/6 bg-[#1a2432] p-6 border-r border-[#2a3241] overflow-y-auto custom-scrollbar">
-        <div className="flex items-center space-x-2 mb-10">
-          <MessageSquare className="w-5 h-5 text-blue-400" />
-          <h2 className="text-xl font-bold text-white">Project Files</h2>
+      <div className="w-1/6 bg-white p-6 border-r border-gray-200 overflow-y-auto custom-scrollbar shadow-lg">
+        <div className="flex items-center space-x-3 mb-8 pb-4 border-b border-gray-200">
+          <div className="bg-gradient-to-br from-purple-500 to-blue-500 p-2.5 rounded-lg shadow-md">
+            <MessageSquare className="w-5 h-5 text-white" />
+          </div>
+          <h2 className="text-lg font-bold text-gray-900">Project Files</h2>
         </div>
 
-        <div className="h-full">
+        <div className="space-y-2">
           {Object.keys(filetree).map((file, index) => (
-            <div key={index} className="space-y-2 p-1 text-white cursor-pointer">
+            <div key={index} className="text-gray-900 cursor-pointer">
               <button
                 onClick={() => openFile(file)}
-                className={`flex items-center space-x-2 p-2 rounded-lg w-full hover:bg-slate-700 ${activeFile === file ? 'bg-[#2a3b4c]' : ''}`}
+                className={`flex items-center space-x-3 p-3 rounded-xl w-full transition-all duration-200 font-medium text-sm ${activeFile === file
+                    ? "bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 text-purple-700 shadow-md"
+                    : "hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-transparent hover:border-gray-200"
+                  }`}
               >
-                <span className="truncate max-w-[180px]" title={file}>
-                  📄 {file}
+                <span className="text-lg">📄</span>
+                <span className="truncate max-w-[140px]" title={file}>
+                  {file}
                 </span>
               </button>
             </div>
@@ -424,13 +460,16 @@ const Project = () => {
       </div>
 
       {/* Code Editor Section */}
-      <div className="flex-1 bg-[#0f1218] flex flex-col overflow-hidden">
+      <div className="flex-1 bg-gray-50 flex flex-col overflow-hidden shadow-2xl">
         {/* File Tabs */}
-        <div className="flex items-center p-2 bg-[#1a2432] border-b border-[#2a3241]">
+        <div className="flex items-center p-2 bg-white border-b border-gray-200 overflow-x-auto shadow-sm">
           {openFiles.map((file) => (
             <div
               key={file}
-              className={`flex items-center px-4 py-2 mr-2 text-sm rounded-t-lg cursor-pointer ${activeFile === file ? "bg-[#0f1218] text-white" : "bg-[#2a3241] text-gray-400"}`}
+              className={`flex items-center px-4 py-2.5 mr-2 text-sm rounded-t-xl cursor-pointer transition-all duration-200 font-medium ${activeFile === file
+                  ? "bg-gray-50 text-gray-900 shadow-sm border-t-2 border-t-purple-600"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-800"
+                }`}
               onClick={() => setActiveFile(file)}
             >
               <span>{file}</span>
@@ -439,38 +478,76 @@ const Project = () => {
                   e.stopPropagation();
                   closeFile(file);
                 }}
-                className="ml-2 text-gray-400 hover:text-white"
+                className="ml-3 text-gray-400 hover:text-gray-600 transition-colors p-1 hover:bg-gray-200 rounded"
               >
-                <X className="w-4 h-4" />
+                <X className="w-3.5 h-3.5" />
               </button>
             </div>
           ))}
         </div>
 
-        {/* Code Editor */}
-        <div className="flex-1 overflow-auto">
+        {/* Code Editor with Better Visibility */}
+        <div className="flex-1 overflow-auto bg-white">
           {activeFile && filetree[activeFile] ? (
             <div className="h-full">
               <SyntaxHighlighter
-                language={filetree[activeFile].language || 'javascript'}
+                language={filetree[activeFile].language || "javascript"}
                 style={tomorrow}
                 customStyle={{
                   margin: 0,
-                  padding: '1.5rem',
-                  height: '100%',
-                  background: '#1a2432',
-                  fontSize: '0.875rem',
-                  borderRadius: 0
+                  padding: "1.5rem",
+                  height: "100%",
+                  background: "#ffffff",
+                  fontSize: "1rem",
+                  borderRadius: 0,
+                  lineHeight: "1.8",
+                  fontFamily: "'Consolas', 'Monaco', 'Courier New', monospace",
+                  fontWeight: "500",
                 }}
-                lineNumberStyle={{ color: '#6e7681' }}
+                lineNumberStyle={{ 
+                  color: "#4b5563",
+                  minWidth: "3.5em",
+                  paddingRight: "1.5em",
+                  fontWeight: "700",
+                  fontSize: "0.95rem",
+                  userSelect: "none",
+                  borderRight: "1px solid #e5e7eb",
+                }}
+                codeTagProps={{
+                  style: {
+                    color: "#1f2937",
+                    fontWeight: "500",
+                  }
+                }}
                 showLineNumbers
+                wrapLines={true}
+                wrapLongLines={true}
               >
                 {filetree[activeFile].content}
               </SyntaxHighlighter>
             </div>
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-gray-500">
-              Select a file to edit
+            <div className="w-full h-full flex flex-col items-center justify-center bg-gray-50">
+              <div className="bg-white p-8 rounded-2xl border-2 border-dashed border-gray-300 shadow-lg">
+                <div className="bg-gradient-to-br from-purple-100 to-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-md">
+                  <svg
+                    className="w-8 h-8 text-purple-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
+                    />
+                  </svg>
+                </div>
+                <p className="text-gray-500 text-center font-medium">
+                  Select a file to edit
+                </p>
+              </div>
             </div>
           )}
         </div>
